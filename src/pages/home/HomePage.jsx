@@ -9,21 +9,21 @@ const HomePage = () => {
         flex-col
         md:flex-row
         h-screen
-        overflow-hidden
         max-w-[1400px]
         mx-auto
       "
     >
-      {/* LEFT */}
+      {/* LEFT CONTENT SECTION */}
       <div
         className="
           flex-[3]
           flex
           items-center
-          px-5
+          px-6
           md:px-10
           lg:px-16
-          pt-[120px]
+          pt-[100px]
+          md:pt-0
         "
       >
         <div
@@ -31,81 +31,76 @@ const HomePage = () => {
             flex
             flex-col
             justify-center
-            gap-4
+            gap-8
             w-full
           "
         >
-          
-          {/* TITLE */}
-          <h1
-            className="
-              text-[34px]
-              md:text-[36px]
-              xl:text-[40px]
-              font-bold
-              leading-tight
-              max-w-[600px]
-            "
-          >
-            Find Real Estate & Get Your Dream Place
-          </h1>
+          {/* TITLE & DESCRIPTION */}
+          <div className="flex flex-col gap-4">
+            <h1
+              className="
+                text-[36px]
+                md:text-[42px]
+                xl:text-[54px]
+                font-bold
+                leading-[1.1]
+                max-w-[600px]
+              "
+            >
+              Find Real Estate & Get Your Dream Place
+            </h1>
 
-          {/* DESCRIPTION */}
-          <p
-            className="
-              text-gray-600
-              leading-7
-              text-sm
-              md:text-base
-              max-w-[600px]
-            "
-          >
-            Discover modern spaces designed for the way you live today.
-            Whether you're searching for a cozy apartment, a family home,
-            or your next investment, we make finding the perfect place
-            simple, fast, and seamless.
-          </p>
+            <p
+              className="
+                text-gray-600
+                leading-7
+                text-base
+                max-w-[550px]
+              "
+            >
+              Discover modern spaces designed for the way you live today.
+              Whether you're searching for a cozy apartment, a family home,
+              or your next investment.
+            </p>
+          </div>
 
-          {/* SEARCHING */}
-          <SearchBar />
+          {/* SEARCH BAR */}
+          <div className="z-10 w-full max-w-[700px]">
+            <SearchBar />
+          </div>
 
+          {/* STATS SECTION */}
           <div
             className="
-              hidden
+              grid
+              grid-cols-2
               sm:flex
               items-center
               justify-between
               max-w-[600px]
-              pt-2
+              gap-6
+              md:gap-0
+              pb-10
+              md:pb-0
             "
           >
-            
             <div>
-              <h1 className="text-3xl font-bold">
-                16+
-              </h1>
-
-              <h2 className="text-base text-gray-500 font-light">
+              <h1 className="text-2xl md:text-3xl font-bold italic">16+</h1>
+              <h2 className="text-sm md:text-base text-gray-500 font-light">
                 Years of Experience
               </h2>
             </div>
 
             <div>
-              <h1 className="text-3xl font-bold">
-                200
-              </h1>
-
-              <h2 className="text-base text-gray-500 font-light">
+              <h1 className="text-2xl md:text-3xl font-bold italic">200</h1>
+              <h2 className="text-sm md:text-base text-gray-500 font-light">
                 Awards Gained
               </h2>
             </div>
 
-            <div>
-              <h1 className="text-3xl font-bold">
-                2000+
-              </h1>
-
-              <h2 className="text-base text-gray-500 font-light">
+            <div className="col-span-2 sm:col-span-1">
+              <h1 className="text-2xl md:text-3xl font-bold italic">2000+</h1>
+              <h2 className="text-sm md:text-base text-gray-500 font-light">
                 Property Ready
               </h2>
             </div>
@@ -113,7 +108,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* RIGHT IMAGE */}
+      {/* RIGHT IMAGE SECTION */}
       <div
         className="
           hidden

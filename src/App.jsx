@@ -14,6 +14,7 @@ import Login from "./pages/login/Login";
 import Signup from "./pages/signup/Signup";
 import ProfileUpdate from "./pages/profileUpdate/ProfileUpdate";
 import ProfilePage from "./pages/profile/ProfilePage";
+
 const App = () => {
   const router = createBrowserRouter([
     {
