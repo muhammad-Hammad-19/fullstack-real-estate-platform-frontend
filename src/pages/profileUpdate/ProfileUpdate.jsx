@@ -25,7 +25,7 @@ const ProfileUpdate = () => {
 
     try {
       const res = await axios.put(
-        `http://localhost:3000/api/users/${user.id}`,
+        `http://localhost:3000/api/users/${user.userId}`,
         {
           username,
           email,
@@ -36,17 +36,10 @@ const ProfileUpdate = () => {
           withCredentials: true,
         },
       );
-
-      console.log("SEND DATA:", {
-        username,
-        email,
-        password,
-        avatar,
-      });
-
       if (res.data.success) {
         updateUser(res.data.user);
         navigate("/profile");
+        console.log("hello", res.data);
       }
     } catch (err) {
       console.log(err.response?.data || err.message);

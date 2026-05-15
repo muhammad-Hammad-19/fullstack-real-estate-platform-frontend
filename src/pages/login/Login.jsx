@@ -29,7 +29,7 @@ const Login = () => {
       if (res.data.success) {
         // Context update
         updateUser(res.data.data);
-
+        
         console.log("Login Successful!");
 
         navigate("/profile");
