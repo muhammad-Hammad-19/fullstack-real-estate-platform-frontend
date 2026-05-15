@@ -19,7 +19,7 @@ function NewPostPage() {
   const onSubmit = async (data) => {
     setLoading(true);
     setError("");
-
+    
     // Data ko aapke backend architecture ke mutabiq split kiya hai
     const payload = {
       postData: {
