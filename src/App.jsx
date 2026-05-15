@@ -14,6 +14,7 @@ import Login from "./pages/login/Login";
 import Signup from "./pages/signup/Signup";
 import ProfileUpdate from "./pages/profileUpdate/ProfileUpdate";
 import ProfilePage from "./pages/profile/ProfilePage";
+import NewPostPage from "./pages/newPostPage/NewPostPage";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -40,6 +41,15 @@ const App = () => {
         {
           path: "/profile",
           element: <ProfilePage />,
+        },
+        {
+          path: "/profile",
+          element: <ProfilePage />,
+        },
+        {
+          path: "/post/create",
+
+          element: <NewPostPage />,
         },
       ],
     },
