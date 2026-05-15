@@ -21,7 +21,6 @@ const ProfilePage = () => {
     updateUser(null);
     navigate("/");
   };
-
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-100px)] overflow-hidden bg-white">
       {/* LEFT SIDE: USER DETAILS & LISTS */}
