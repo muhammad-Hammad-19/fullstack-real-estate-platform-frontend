@@ -13,7 +13,7 @@ const ProfilePage = () => {
       navigate("/auth/login");
     }
   }, [user, navigate]);
-
+  
   if (!user)
     return <div className="p-10 text-center font-bold">Loading...</div>;
 

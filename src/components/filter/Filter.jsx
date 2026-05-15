@@ -3,28 +3,28 @@ import { useSearchParams } from "react-router-dom";
 
 function Filter() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [query, setQuery] = useState({
-    type: searchParams.get("type") || "",
-    city: searchParams.get("city") || "",
-    property: searchParams.get("property") || "",
-    minPrice: searchParams.get("minPrice") || "",
-    maxPrice: searchParams.get("maxPrice") || "",
-    bedroom: searchParams.get("bedroom") || "",
-  });
 
-  const handleChange = (e) => {
-    setQuery({
-      ...query,
-      [e.target.name]: e.target.value,
+  // Har ek input field ke liye alag aur simple state
+  const [city, setCity] = useState(searchParams.get("city") || "");
+  const [type, setType] = useState(searchParams.get("type") || "");
+  const [property, setProperty] = useState(searchParams.get("property") || "");
+  const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "");
+  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
+  const [bedroom, setBedroom] = useState(searchParams.get("bedroom") || "");
+
+  // Search button click hone par saari states ko URL me set karne wala function
+  const handleFilter = () => {
+    setSearchParams({
+      city,
+      type,
+      property,
+      minPrice,
+      maxPrice,
+      bedroom,
     });
   };
-
-  const handleFilter = () => {
-    setSearchParams(query);
-  };
-
+  
   return (
-    // Main Filter Container
     <div className="flex flex-col gap-[10px] w-full">
       {/* Title */}
       <h1 className="font-light text-2xl text-slate-700">
@@ -46,10 +46,9 @@ function Filter() {
           <input
             type="text"
             id="city"
-            name="city"
             placeholder="City Location"
-            onChange={handleChange}
-            defaultValue={query.city}
+            value={city}
+            onChange={(e) => setCity(e.target.value)} // Seedhe state update
             className="w-full p-[10px] border border-[#e0e0e0] rounded-[5px] text-sm focus:outline-amber-400"
           />
         </div>
@@ -66,10 +65,9 @@ function Filter() {
             Type
           </label>
           <select
-            name="type"
             id="type"
-            onChange={handleChange}
-            defaultValue={query.type}
+            value={type}
+            onChange={(e) => setType(e.target.value)} // Seedhe state update
             className="w-full p-[10px] border border-[#e0e0e0] rounded-[5px] text-sm bg-white focus:outline-amber-400"
           >
             <option value="">any</option>
@@ -87,10 +85,9 @@ function Filter() {
             Property
           </label>
           <select
-            name="property"
             id="property"
-            onChange={handleChange}
-            defaultValue={query.property}
+            value={property}
+            onChange={(e) => setProperty(e.target.value)} // Seedhe state update
             className="w-full p-[10px] border border-[#e0e0e0] rounded-[5px] text-sm bg-white focus:outline-amber-400"
           >
             <option value="">any</option>
@@ -112,10 +109,9 @@ function Filter() {
           <input
             type="number"
             id="minPrice"
-            name="minPrice"
             placeholder="any"
-            onChange={handleChange}
-            defaultValue={query.minPrice}
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)} // Seedhe state update
             className="w-full p-[10px] border border-[#e0e0e0] rounded-[5px] text-sm focus:outline-amber-400"
           />
         </div>
@@ -131,10 +127,9 @@ function Filter() {
           <input
             type="text"
             id="maxPrice"
-            name="maxPrice"
             placeholder="any"
-            onChange={handleChange}
-            defaultValue={query.maxPrice}
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)} // Seedhe state update
             className="w-full p-[10px] border border-[#e0e0e0] rounded-[5px] text-sm focus:outline-amber-400"
           />
         </div>
@@ -150,10 +145,9 @@ function Filter() {
           <input
             type="text"
             id="bedroom"
-            name="bedroom"
             placeholder="any"
-            onChange={handleChange}
-            defaultValue={query.bedroom}
+            value={bedroom}
+            onChange={(e) => setBedroom(e.target.value)} // Seedhe state update
             className="w-full p-[10px] border border-[#e0e0e0] rounded-[5px] text-sm focus:outline-amber-400"
           />
         </div>
