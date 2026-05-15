@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../context/AuthContext";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-
-  // 1. LocalStorage se data nikalna
+ const { user, updateUser } = useUser();
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    } else {
-      navigate("auth/login");
+    if (!user) {
+      navigate("/auth/login");
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   if (!user) return <div className="p-10">Loading...</div>;
 
+  const handleLogout = () => {
+    updateUser(null);
+    navigate("/");
+  };
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-100px)] overflow-hidden">
       {/* LEFT SIDE: USER DETAILS */}
@@ -28,11 +28,11 @@ const ProfilePage = () => {
               <h1 className="text-3xl font-light uppercase">
                 User Information
               </h1>
-              <button className="bg-[#fece51] px-6 py-2 rounded-md font-medium hover:bg-yellow-400 transition-all">
+              <button onClick={()=>navigate("/profile/update")} className="bg-[#fece51] px-6 py-2 rounded-md font-medium hover:bg-yellow-400 transition-all">
                 Update Profile
               </button>
             </div>
-
+            
             <div className="flex flex-col gap-4 text-lg">
               <span className="flex items-center gap-4">
                 <b>Avatar:</b>
@@ -52,7 +52,10 @@ const ProfilePage = () => {
               <span>
                 <b>E-mail:</b> {user.email}
               </span>
-              <button className="bg-red-500 text-white px-6 py-2 rounded-md font-medium w-max mt-4 hover:bg-red-600 transition-all">
+              <button
+                onClick={() => handleLogout()}
+                className="bg-red-500 text-white px-6 py-2 rounded-md font-medium w-max mt-4 hover:bg-red-600 transition-all"
+              >
                 Logout
               </button>
             </div>

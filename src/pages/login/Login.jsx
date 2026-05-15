@@ -1,24 +1,38 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useUser } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
+  const { updateUser } = useUser();
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:3000/api/auth/login", {
-        username,
-        password,
-      });
-      if (res.data.success) {
-        localStorage.setItem("user", JSON.stringify(res.data.data));
-        
-        console.log("Login Successful, User Saved!");
+      const res = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        {
+          username,
+          password,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
 
-        // navigate("/");
+      if (res.data.success) {
+        // Context update
+        updateUser(res.data.data);
+
+        console.log("Login Successful!");
+
+        navigate("/profile");
       }
     } catch (err) {
       console.log(err.response?.data);
@@ -56,7 +70,10 @@ const Login = () => {
 
             <p className="text-gray-600 text-center mt-2">
               Don't you have an account?{" "}
-              <a href="/signup" className="text-black font-semibold underline">
+              <a
+                href="/auth/signup"
+                className="text-black font-semibold underline"
+              >
                 Sign up
               </a>
             </p>

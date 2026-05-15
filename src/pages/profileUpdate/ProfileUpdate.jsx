@@ -1,33 +1,93 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import UploadWidget from "../../components/uploadWidget/UploadWidget";
+import { useUser } from "../../context/AuthContext";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const ProfileUpdate = () => {
+  const { user, updateUser } = useUser();
+
+  const navigate = useNavigate();
+  const [avatar, setAvatar] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await axios.put(
+        `http://localhost:3000/api/users/${user.id}`,
+        {
+          username,
+          email,
+          password,
+          avatar,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      console.log("SEND DATA:", {
+        username,
+        email,
+        password,
+        avatar,
+      });
+
+      if (res.data.success) {
+        updateUser(res.data.user);
+        navigate("/profile");
+      }
+    } catch (err) {
+      console.log(err.response?.data || err.message);
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* LEFT SIDE: UPDATE PROFILE FORM */}
+      {/* LEFT SIDE */}
       <div className="flex-[3] flex flex-col justify-center items-center px-10 bg-white">
         <div className="max-w-[400px] w-full">
           <h1 className="text-4xl font-bold mb-8">Update Profile</h1>
 
-          <form className="flex flex-col gap-5">
+          <form onSubmit={handleUpdate} className="flex flex-col gap-5">
             <input
               type="text"
               placeholder="Username"
-              className="p-5 border border-gray-300 rounded-md outline-none focus:border-black transition-all"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="p-5 border border-gray-300 rounded-md"
             />
+
             <input
               type="email"
               placeholder="Email"
-              className="p-5 border border-gray-300 rounded-md outline-none focus:border-black transition-all"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="p-5 border border-gray-300 rounded-md"
             />
+
             <input
               type="password"
               placeholder="New Password"
-              className="p-5 border border-gray-300 rounded-md outline-none focus:border-black transition-all"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-5 border border-gray-300 rounded-md"
             />
 
             <button
               type="submit"
-              className="bg-[#51c7fec4] p-5 rounded-md font-bold text-lg  cursor-pointer mt-2"
+              className="bg-[#51c7fec4] p-5 rounded-md font-bold"
             >
               Update
             </button>
@@ -35,53 +95,27 @@ const ProfileUpdate = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDE: IMAGE & UPLOAD SECTION */}
-      <div
-        className="
-          hidden
-          md:flex
-          flex-[2]
-          bg-[#fcf5f3]
-          relative
-          overflow-hidden
-          -mt-[100px]
-          h-[calc(100vh+100px)]
-          flex-col
-          items-center
-          justify-center
-          gap-6
-        "
-      >
-        {/* Dummy Profile Photo */}
-        <div className="w-40 h-40 rounded-full bg-gray-300 border-4 border-white shadow-lg flex items-center justify-center overflow-hidden">
+      {/* RIGHT SIDE */}
+      <div className="hidden md:flex flex-[2] bg-[#fcf5f3] relative overflow-hidden -mt-[100px] h-[calc(100vh+100px)] flex-col items-center justify-center gap-6">
+        {/* PROFILE IMAGE */}
+        <div className="w-40 h-40 rounded-full bg-gray-300 border-4 border-white shadow-lg overflow-hidden">
           <img
-            src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
-            alt="dummy profile"
-            className="w-full h-full object-cover opacity-60"
+            src={
+              avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            }
+            alt="profile"
+            className="w-full h-full object-cover"
           />
         </div>
 
-        {/* Upload Button */}
-        <label className="bg-[#51c7fe]  text-white px-6 py-3 rounded-md cursor-pointer hover:bg-gray-800 transition-all font-medium">
-          Upload Photo
-          <input type="file" className="hidden" />
-        </label>
-        
-        {/* Background Decorative Image (Optional - Overlayed) */}
+        {/* UPLOAD BUTTON */}
+        <UploadWidget setAvatar={setAvatar} />
+
+        {/* BACKGROUND */}
         <img
           src="/bg.png"
           alt="hero"
-          className="
-            absolute
-            top-0
-            right-[-15%]
-            h-full
-            max-w-none
-            object-cover
-            scale-110
-            z-[-1]
-            opacity-30
-          "
+          className="absolute top-0 right-[-15%] h-full object-cover opacity-30 z-[-1]"
         />
       </div>
     </div>
