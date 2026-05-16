@@ -20,7 +20,6 @@ const Map = ({ items = [] }) => {
   const defaultCenter = [51.505, -0.09];
 
   // Agar list mein items hain toh pehle item ki location uthayega, nahi toh default center
-  
   const centerPosition =
     items.length > 0 && items[0].latitude && items[0].longitude
       ? [items[0].latitude, items[0].longitude]
@@ -33,9 +32,13 @@ const Map = ({ items = [] }) => {
       scrollWheelZoom={false}
       className="w-full h-full" // Tailwind classes taake map full container cover kare
     >
+      {/* 
+        Yahan humne Google Maps ka official server URL lagaya hai jisme '&hl=en' query parameter hai.
+        Yeh pure map par har haal mein English language ko strict force karega, chahe aapka internet IP Pakistan ka ho ya browser setting Urdu ho!
+      */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
+        url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en"
       />
 
       {/* Agar items pass ho rahe hain toh unke dynamic pins show karega */}

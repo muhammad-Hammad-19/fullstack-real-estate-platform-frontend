@@ -12,17 +12,21 @@ const ListPage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   useEffect(() => {
     const fetchFilteredPosts = async () => {
       try {
         setLoading(true);
+
         setError("");
         
         const res = await axios.get(
           `http://localhost:3000/api/posts?${searchParams.toString()}`,
+          {
+            withCredentials: true,
+          },
         );
-
+        
         // Backend response structure ke mutabiq data load karna
         setPosts(res.data.data || res.data);
       } catch (err) {
