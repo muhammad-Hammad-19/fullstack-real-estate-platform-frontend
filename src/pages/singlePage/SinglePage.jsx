@@ -15,27 +15,47 @@ function SinglePage() {
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
-
-  // 🔄 FETCH POST DETAILS & CHECK IF ALREADY SAVED
+  
+  // 🔄 1. FETCH POST DETAILS & DETECT SAVED STATUS
   useEffect(() => {
-    const fetchPostAndSavedStatus = async () => {
+    const fetchPostData = async () => {
       try {
         setLoading(true);
         setError("");
 
-        // 1. Original Post Data fetch kiya
-        const res = await axios.get(`http://localhost:3000/api/posts/${id}`);
-        const exactPostData = res.data.data || res.data;
-        setPost(exactPostData);
+        // Single Post data call (Using exact ID parameter)
+        const res = await axios.get(`http://localhost:3000/api/posts/${id}`, {
+          withCredentials: true,
+        });
 
-        // 2. Refresh sync: Agar user logged in hai, check karein yeh saved list me hai ya nahi
+        // 🟢 FIX: Array se single object extraction clean tareeqe se kiya
+        const exactPostData = res.data.data || res.data;
+        const finalPost = Array.isArray(exactPostData)
+          ? exactPostData[0]
+          : exactPostData;
+
+        if (!finalPost) {
+          setError("Property details nahi mil saki!");
+          return;
+        }
+
+        setPost(finalPost);
+
+        // 🟢 SAVED STATUS VERIFICATION (Clean Lookup)
         if (user) {
           try {
-            const savedCheck = await axios.get("http://localhost:3000/api/users/savedPosts", {
-              withCredentials: true,
-            });
+            const savedCheck = await axios.get(
+              "http://localhost:3000/api/users/savedPosts",
+              {
+                withCredentials: true,
+              },
+            );
             const savedList = savedCheck.data.data || [];
-            const isThisPostSaved = savedList.some((item) => item.postId === id);
+
+            // Check if this post ID matches any item inside user's saved array
+            const isThisPostSaved = savedList.some(
+              (item) => item.postId === id,
+            );
             setSaved(isThisPostSaved);
           } catch (err) {
             console.error("Saved status verify failed:", err);
@@ -43,19 +63,21 @@ function SinglePage() {
         }
       } catch (err) {
         console.error("Single post load error:", err);
-        setError(err.response?.data?.message || "Property load karne mein masala hua!");
+        setError(
+          err.response?.data?.message || "Property load karne mein masala hua!",
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) fetchPostAndSavedStatus();
+    if (id) fetchPostData();
   }, [id, user]);
 
-  // 💾 TOGGLE SAVE ACTION
+  // 💾 2. TOGGLE SAVE/UNSAVE ACTION HANDLER
   const handleSave = async () => {
     if (!user) {
-      navigate("/login");
+      navigate("/auth/login"); // Sahi auth login path
       return;
     }
 
@@ -64,12 +86,12 @@ function SinglePage() {
       const response = await axios.post(
         "http://localhost:3000/api/users/save",
         { postId: id },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       if (response.data.success) {
-        setSaved(response.data.isSaved); // Backend strict status handler
-        alert(response.data.message);
+        // State updates beautifully dynamically based on backend dynamic response
+        setSaved(response.data.isSaved);
       }
     } catch (err) {
       console.error("Post save error:", err);
@@ -79,49 +101,108 @@ function SinglePage() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center h-[calc(100vh-100px)]">Loading...</div>;
-  if (error || !post) return <div className="flex items-center justify-center h-[calc(100vh-100px)] text-red-500">{error}</div>;
+  // ─── RENDERING CONDITIONALS ───────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-100px)] text-lg font-medium text-gray-500">
+        Loading Property Details...
+      </div>
+    );
+  }
+
+  if (error || !post) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-100px)] text-red-500 font-semibold">
+        {error || "Post data unavailable."}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col lg:flex-row h-full w-full bg-white">
-      {/* LEFT CONTENT BOX */}
-      <div className="flex-[3] h-full overflow-y-auto p-6">
-        <div className="flex gap-2 h-[350px] w-full">
-          <img src={post.images?.[0] || "/noimage.jpg"} alt="Main" className="w-full h-full object-cover rounded-xl" />
+      {/* ─── LEFT SIDE CONTENT BOX ─────────────────────────────────── */}
+      <div className="flex-[3] h-full overflow-y-auto p-6 md:p-8">
+        {/* Main Banner Image Container */}
+        <div className="h-[380px] w-full shadow-sm">
+          <img
+            src={
+              post.images?.[0] ||
+              "https://images.unsplash.com/photo-1564013799919-ab600027ffc6"
+            }
+            alt={post.title}
+            className="w-full h-full object-cover rounded-2xl"
+          />
         </div>
-        <div className="mt-8">
-          <h1 className="text-3xl font-bold">{post.title}</h1>
-          <p className="text-gray-500">{post.address}, {post.city}</p>
-          <div className="bg-[#fece51]/30 p-2 rounded mt-2 w-max font-bold">${post.price}</div>
-          <div 
-            className="mt-6 text-slate-600 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.postDetail?.desc || "") }} 
+
+        {/* Content Details */}
+        <div className="mt-8 max-w-[800px]">
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
+            {post.title}
+          </h1>
+          <p className="text-gray-500 mt-1">
+            {post.address}, {post.city}
+          </p>
+
+          <div className="bg-[#fece51]/20 text-[#d49e1e] text-xl px-4 py-2 rounded-lg mt-4 w-max font-bold">
+            Rs. {post.price.toLocaleString()}
+          </div>
+
+          {/* Main Description */}
+          <div
+            className="mt-8 text-slate-600 leading-relaxed text-base border-t pt-6"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(
+                post.postDetail?.desc ||
+                  "No description provided for this listing.",
+              ),
+            }}
           />
         </div>
       </div>
 
-      {/* RIGHT UTILITIES & ACTIONS */}
-      <div className="flex-[2] bg-[#fcf5f3] p-6 border-l">
-        <div className="flex flex-col gap-4">
-          <p className="font-bold">Sizes</p>
-          <div className="flex gap-2 bg-white p-3 rounded-xl border">
-            <span>{post.postDetail?.size || 0} sqft</span> | <span>{post.bedroom} Beds</span> | <span>{post.bathroom} Bath</span>
+      {/* ─── RIGHT SIDE UTILITIES & ACTIONS ─────────────────────────── */}
+      <div className="flex-[2] bg-[#fcf5f3] p-6 md:p-8 border-l border-[#f7deda] flex flex-col gap-6">
+        <div>
+          <p className="font-bold text-slate-700 mb-2">Property Specs</p>
+          <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm text-sm text-slate-600">
+            <span>
+              <b>{post.postDetail?.size || 0}</b> sqft
+            </span>
+            <span className="text-slate-300">|</span>
+            <span>
+              <b>{post.bedroom}</b> Beds
+            </span>
+            <span className="text-slate-300">|</span>
+            <span>
+              <b>{post.bathroom}</b> Baths
+            </span>
           </div>
+        </div>
 
-          <p className="font-bold">Location</p>
-          <div className="w-full h-[200px] rounded-xl overflow-hidden"><Map items={[post]} /></div>
-
-          <div className="flex gap-4 mt-4">
-            <button className="w-full p-3 bg-white border border-[#fece51] rounded-md font-semibold text-slate-700">Message</button>
-            <button
-              onClick={handleSave}
-              disabled={saveLoading}
-              style={{ backgroundColor: saved ? "#fece51" : "white" }}
-              className="w-full p-3 border border-[#fece51] rounded-md font-semibold transition-all shadow-sm active:scale-95"
-            >
-              {saveLoading ? "Processing..." : saved ? "Place Saved ✔" : "Save the Place"}
-            </button>
+        <div>
+          <p className="font-bold text-slate-700 mb-2">Location Map</p>
+          <div className="w-full h-[240px] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+            <Map items={[post]} />
           </div>
+        </div>
+
+        {/* Action Button Controls */}
+        <div className="flex gap-4 mt-auto pt-6 border-t border-[#f7deda]">
+          <button className="w-full p-3 bg-white border-2 border-[#fece51] hover:bg-yellow-50 rounded-xl font-bold text-slate-700 transition-all active:scale-95 cursor-pointer">
+            Message Owner
+          </button>
+
+          <button
+            onClick={handleSave}
+            disabled={saveLoading}
+            className={`w-full p-3 border-2 border-[#fece51] rounded-xl font-bold transition-all shadow-md active:scale-95 cursor-pointer ${
+              saved
+                ? "bg-[#fece51] text-slate-800 hover:bg-yellow-400"
+                : "bg-white text-slate-700 hover:bg-yellow-50"
+            }`}
+          >
+            {saveLoading ? "Processing..." : saved ? "Saved ✔" : "Save Place"}
+          </button>
         </div>
       </div>
     </div>

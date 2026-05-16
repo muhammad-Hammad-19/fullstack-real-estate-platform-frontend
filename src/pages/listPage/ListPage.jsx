@@ -18,7 +18,7 @@ const ListPage = () => {
       try {
         setLoading(true);
         setError("");
-
+        
         const res = await axios.get(
           `http://localhost:3000/api/posts?${searchParams.toString()}`,
         );
