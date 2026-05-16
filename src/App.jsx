@@ -16,6 +16,7 @@ import ProfileUpdate from "./pages/profileUpdate/ProfileUpdate";
 import ProfilePage from "./pages/profile/ProfilePage";
 import NewPostPage from "./pages/newPostPage/NewPostPage";
 import ListPage from "./pages/listPage/ListPage";
+import SinglePage from "./pages/singlePage/SinglePage";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -54,6 +55,10 @@ const App = () => {
         {
           path: "/list",
           element: <ListPage />,
+        },
+        {
+          path: "/list/:id",
+          element: <SinglePage />,
         },
       ],
     },

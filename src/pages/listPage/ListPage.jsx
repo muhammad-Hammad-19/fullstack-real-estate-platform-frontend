@@ -1,50 +1,43 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import axios from "axios";
 import Filter from "../../components/filter/Filter";
 import Card from "../../components/card/Card";
 import Map from "../../components/map/Map";
-import { listData } from "../../lib/dummydata";
 
 const ListPage = () => {
   const [searchParams] = useSearchParams();
 
-  // URL ki values nikalna
-  const cityQuery = searchParams.get("city")?.toLowerCase() || "";
-  const typeQuery = searchParams.get("type") || "";
-  const propertyQuery = searchParams.get("property") || "";
-  const minPriceQuery = Number(searchParams.get("minPrice")) || 0;
-  const maxPriceQuery = Number(searchParams.get("maxPrice")) || Infinity;
-  const bedroomQuery = searchParams.get("bedroom") || "";
-
-  // 🔍 DEBUGGING LOGS: Console me check karne ke liye ki URL se kya aa raha hai
-  console.log("--- CURRENT FILTERS IN URL ---");
-  console.log({
-    cityQuery,
-    typeQuery,
-    propertyQuery,
-    minPriceQuery,
-    maxPriceQuery,
-    bedroomQuery,
-  });;
+  // Local States for managing data flow
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   
- const filteredItems = useMemo(() => {
-  return listData.filter((post) => {
-    // 1. Post ka address nikal kar small letters (lowercase) me kiya
-    const postAddress = post.address ? String(post.address).toLowerCase() : "";
-    
-    // 2. Check kiya ke kya input me likhi hui city/address post ke address me maujood hai?
+  useEffect(() => {
+    const fetchFilteredPosts = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-    const matchCity = cityQuery
-      ? postAddress.includes(cityQuery.toLowerCase())
-      : true;
+        const res = await axios.get(
+          `http://localhost:3000/api/posts?${searchParams.toString()}`,
+        );
 
-    // Sirf city match return karega
-    return matchCity;
+        // Backend response structure ke mutabiq data load karna
+        setPosts(res.data.data || res.data);
+      } catch (err) {
+        console.error("Error fetching filtered posts:", err);
+        setError(
+          err.response?.data?.message ||
+            "Properties load karne mein masala hua!",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  });
-}, [listData, cityQuery]); // Dependency array me bhi baaki fuzool cheezein hata dein
-  // 🔍 DEBUGGING LOG: Kitne items bache filter hone ke baad
-  console.log("Filtered Items Count:", filteredItems.length);
+    fetchFilteredPosts();
+  }, [searchParams]); // Jab bhi user filter submit karega aur URL badlega, ye function dobara chalega
 
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-100px)] overflow-hidden bg-white w-full">
@@ -54,8 +47,16 @@ const ListPage = () => {
           <Filter />
 
           <div className="flex flex-col gap-6">
-            {filteredItems && filteredItems.length > 0 ? (
-              filteredItems.map((post) => <Card key={post.id} item={post} />)
+            {loading ? (
+              <p className="text-center text-slate-500 py-10 font-medium">
+                Loading properties...
+              </p>
+            ) : error ? (
+              <p className="text-center text-red-500 py-10 font-medium">
+                {error}
+              </p>
+            ) : posts && posts.length > 0 ? (
+              posts.map((post) => <Card key={post.id} item={post} />)
             ) : (
               <p className="text-gray-400 italic text-center py-10 bg-slate-50 rounded-lg border-2 border-dashed">
                 No properties match your filter criteria.
@@ -67,7 +68,8 @@ const ListPage = () => {
 
       {/* RIGHT SIDE: MAP SYSTEM */}
       <div className="hidden md:block flex-[2] h-full bg-[#fcf5f3] relative">
-        <Map items={filteredItems} />
+        {/* Loading state handle ho taaki empty posts par map component crash na kare */}
+        {!loading && <Map items={posts || []} />}
       </div>
     </div>
   );
