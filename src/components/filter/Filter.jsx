@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { cityUppercase } from "../../utilis";
 
 function Filter() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,7 +24,7 @@ function Filter() {
       bedroom,
     });
   };
-  
+
   return (
     <div className="flex flex-col gap-[10px] w-full">
       {/* Title */}
@@ -48,7 +49,11 @@ function Filter() {
             id="city"
             placeholder="City Location"
             value={city}
-            onChange={(e) => setCity(e.target.value)} // Seedhe state update
+            onChange={(e) => {
+              let cityName = cityUppercase(e.target.value);
+              console.log(cityName); // Debug karne ke liye
+              setCity(cityName); // State update karne ke liye
+            }}
             className="w-full p-[10px] border border-[#e0e0e0] rounded-[5px] text-sm focus:outline-amber-400"
           />
         </div>

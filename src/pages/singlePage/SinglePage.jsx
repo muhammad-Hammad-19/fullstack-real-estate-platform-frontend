@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import axios from "axios";
 import Map from "../../components/map/Map";
+import Slider from "../../components/slider/Slider"; 
 import { useUser } from "../../context/AuthContext";
 
 function SinglePage() {
@@ -15,8 +16,9 @@ function SinglePage() {
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
 
-  // 🔄 1. FETCH POST DETAILS & DETECT SAVED STATUS
+  // 🔄 1. FETCH DATA AND DETECT SAVED STATUS
   useEffect(() => {
     const fetchPostData = async () => {
       try {
@@ -25,15 +27,11 @@ function SinglePage() {
 
         const res = await axios.get(
           `http://localhost:3000/api/posts/${id}/details`,
-          {
-            withCredentials: true,
-          },
+          { withCredentials: true }
         );
 
         const exactPostData = res.data.data || res.data;
-        const finalPost = Array.isArray(exactPostData)
-          ? exactPostData[0]
-          : exactPostData;
+        const finalPost = Array.isArray(exactPostData) ? exactPostData[0] : exactPostData;
 
         if (!finalPost) {
           setError("Property details nahi mil saki!");
@@ -42,14 +40,11 @@ function SinglePage() {
 
         setPost(finalPost);
 
-        // 🟢 SAVED STATUS VERIFICATION
         if (user) {
           try {
             const savedCheck = await axios.get(
               "http://localhost:3000/api/users/savedPosts",
-              {
-                withCredentials: true,
-              },
+              { withCredentials: true }
             );
             const savedList = savedCheck.data.data || savedCheck.data || [];
 
@@ -58,7 +53,7 @@ function SinglePage() {
                 item.postId === id ||
                 item.id === id ||
                 item.post?._id === id ||
-                item.post?.id === id,
+                item.post?.id === id
             );
             setSaved(isThisPostSaved);
           } catch (err) {
@@ -67,10 +62,7 @@ function SinglePage() {
         }
       } catch (err) {
         console.error("Single post load error:", err);
-        setError(
-          err.response?.data?.message ||
-            "Property details load karne mein error aaya!",
-        );
+        setError(err.response?.data?.message || "Property details load karne mein error aaya!");
       } finally {
         setLoading(false);
       }
@@ -79,7 +71,7 @@ function SinglePage() {
     if (id) fetchPostData();
   }, [id, user]);
 
-  // 💾 2. TOGGLE SAVE/UNSAVE ACTION HANDLER
+  // 💾 2. SAVE TOGGLE HANDLER
   const handleSave = async () => {
     if (!user) {
       navigate("/auth/login");
@@ -91,7 +83,7 @@ function SinglePage() {
       const response = await axios.post(
         "http://localhost:3000/api/users/save",
         { postId: id },
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       if (response.data.success) {
@@ -105,7 +97,42 @@ function SinglePage() {
     }
   };
 
-  // ─── RENDERING CONDITIONALS ───────────────────────────────────────
+  // ─── 🔥 CHAT AND MESSAGE PROTECTION SYSTEM ────────────────────────
+  const handleMessageOwner = async () => {
+    if (!user) {
+      navigate("/auth/login");
+      return;
+    }
+
+    const ownerId = post.userId || post.user?.id || post.user?._id;
+    const currentUserId = user.id || user.userId;
+
+    if (ownerId === currentUserId) {
+      alert("Aap apni hi property par chat shuru nahi kar sakte!");
+      return;
+    }
+
+    if (!ownerId) {
+      alert("Is post ke owner ki details nahi mil sakein.");
+      return;
+    }
+
+    try {
+      setChatLoading(true);
+      await axios.post(
+        "http://localhost:3000/api/chats",
+        { receiverId: ownerId },
+        { withCredentials: true }
+      );
+      navigate("/profile"); 
+    } catch (err) {
+      console.error("Chat backend redirection:", err);
+      navigate("/profile");
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-100px)] text-lg font-medium text-slate-500 bg-slate-50">
@@ -117,13 +144,8 @@ function SinglePage() {
   if (error || !post) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] gap-4 bg-slate-50">
-        <p className="text-red-500 font-semibold text-lg">
-          {error || "Post data unavailable."}
-        </p>
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium"
-        >
+        <p className="text-red-500 font-semibold text-lg">{error || "Post data unavailable."}</p>
+        <button onClick={() => navigate(-1)} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
           Go Back
         </button>
       </div>
@@ -131,94 +153,161 @@ function SinglePage() {
   }
 
   return (
+    // MAIN LAYOUT: Mobile par columns (flex-col), Large screen par row layout (flex-row)
     <div className="flex flex-col lg:flex-row h-full w-full bg-white">
-      {/* LEFT SIDE CONTENT */}
-      <div className="flex-[3] h-full overflow-y-auto p-4 md:p-8">
-        <div className="h-[260px] md:h-[380px] w-full shadow-sm">
-          <img
-            src={
-              post.images?.[0] ||
-              "https://images.unsplash.com/photo-1564013799919-ab600027ffc6"
-            }
-            alt={post.title}
-            className="w-full h-full object-cover rounded-2xl"
-          />
-        </div>
-
-        <div className="mt-8 max-w-[800px]">
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
-            {post.title}
-          </h1>
-          <p className="text-slate-400 mt-1 text-sm md:text-base">
-            {post.address}, {post.city}
-          </p>
-
-          <div className="bg-[#fece51]/20 text-[#d49e1e] text-lg md:text-xl px-4 py-1.5 rounded-lg mt-4 w-max font-bold">
-            Rs. {post.price ? post.price.toLocaleString() : 0}
+      
+      {/* 🟢 LEFT AREA (Details & Description) */}
+      <div className="flex-[3] h-full overflow-y-auto p-4 md:p-8 lg:pr-12">
+        <div className="w-full">
+          {/* Slider handles main photo and side thumbnail grids via Tailwind structure internally */}
+          <Slider images={post.images || []} />
+          
+          <div className="mt-12">
+            {/* Header Content & User Info Wrapper */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+              <div className="flex flex-col gap-4">
+                <h1 className="text-2xl md:text-3xl font-normal text-slate-800 tracking-tight">{post.title}</h1>
+                <div className="flex items-center gap-1.5 text-slate-400 text-sm">
+                  <img src="/pin.png" alt="pin location" className="w-4 h-4" />
+                  <span>{post.address}, {post.city}</span>
+                </div>
+                <div className="bg-[#fece51]/40 text-slate-800 text-xl px-2 py-1 rounded-md w-max font-light">
+                  Rs. {post.price ? post.price.toLocaleString() : 0}
+                </div>
+              </div>
+              
+              {/* 👤 Owner Profile badge box inside layout */}
+              <div className="flex flex-col items-center justify-center gap-3 px-12 py-4 rounded-xl bg-[#fece51]/20 font-semibold text-sm">
+                <img 
+                  src={post.user?.avatar || "/noavatar.png"} 
+                  alt={post.user?.username || "Owner"} 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <span>{post.user?.username || "Agent"}</span>
+              </div>
+            </div>
+            
+            {/* Safe HTML Content Description */}
+            <div
+              className="mt-12 text-slate-600 leading-relaxed text-sm md:text-base border-t pt-8"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(
+                  post.postDetail?.desc || "No description provided for this listing."
+                ),
+              }}
+            ></div>
           </div>
-
-          <div
-            className="mt-8 text-slate-600 leading-relaxed text-sm md:text-base border-t pt-6 dynamic-desc"
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(
-                post.postDetail?.desc ||
-                  "No description provided for this listing.",
-              ),
-            }}
-          />
         </div>
       </div>
 
-      {/* RIGHT SIDE UTILITIES */}
-      <div className="flex-[2] bg-[#fcf5f3] p-4 md:p-8 border-t lg:border-t-0 lg:border-l border-[#f7deda] flex flex-col gap-6">
+      {/* 🔴 RIGHT AREA (Features & Location Spec Boxes) */}
+      <div className="flex-[2] bg-[#fcf5f3] p-4 md:p-8 lg:px-6 flex flex-col gap-6 overflow-y-auto h-full">
         <div>
-          <p className="font-bold text-slate-700 mb-2 text-sm md:text-base">
-            Property Specs
-          </p>
-          <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm text-xs md:text-sm text-slate-600">
-            <span>
-              <b>{post.postDetail?.size || 0}</b> sqft
-            </span>
-            <span className="text-slate-200">|</span>
-            <span>
-              <b>{post.bedroom || 0}</b> Beds
-            </span>
-            <span className="text-slate-200">|</span>
-            <span>
-              <b>{post.bathroom || 0}</b> Baths
-            </span>
+          <p className="font-bold text-slate-800 mb-3 text-base">General</p>
+          <div className="flex flex-col gap-5 p-5 bg-white rounded-xl shadow-sm">
+            <div className="flex items-center gap-3">
+              <img src="/utility.png" alt="" className="w-6 h-6 p-1 bg-[#fece51]/20 rounded" />
+              <div className="text-xs md:text-sm">
+                <span className="font-bold block text-slate-700">Utilities</span>
+                {post.postDetail?.utilities === "owner" ? (
+                  <p className="text-slate-500">Owner is responsible</p>
+                ) : (
+                  <p className="text-slate-500">Tenant is responsible</p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <img src="/pet.png" alt="" className="w-6 h-6 p-1 bg-[#fece51]/20 rounded" />
+              <div className="text-xs md:text-sm">
+                <span className="font-bold block text-slate-700">Pet Policy</span>
+                {post.postDetail?.pet === "allowed" ? (
+                  <p className="text-slate-500">Pets Allowed</p>
+                ) : (
+                  <p className="text-slate-500">Pets not Allowed</p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <img src="/fee.png" alt="" className="w-6 h-6 p-1 bg-[#fece51]/20 rounded" />
+              <div className="text-xs md:text-sm">
+                <span className="font-bold block text-slate-700">Income Policy</span>
+                <p className="text-slate-500">{post.postDetail?.income || "Standard documentation"}</p>
+              </div>
+            </div>
           </div>
         </div>
 
         <div>
-          <p className="font-bold text-slate-700 mb-2 text-sm md:text-base">
-            Location Map
-          </p>
-          <div className="w-full h-[200px] md:h-[240px] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-            {/* 🟢 FIXED: Double quotes hataye taake valid array pass ho */}
+          <p className="font-bold text-slate-800 mb-3 text-base">Sizes</p>
+          <div className="flex justify-between gap-2">
+            <div className="flex items-center gap-2 bg-white p-2.5 rounded-md flex-1 shadow-sm text-[11px] lg:text-xs text-slate-700">
+              <img src="/size.png" alt="" className="w-5 h-5" />
+              <span>{post.postDetail?.size || 0} sqft</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white p-2.5 rounded-md flex-1 shadow-sm text-[11px] lg:text-xs text-slate-700">
+              <img src="/bed.png" alt="" className="w-5 h-5" />
+              <span>{post.bedroom || 0} beds</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white p-2.5 rounded-md flex-1 shadow-sm text-[11px] lg:text-xs text-slate-700">
+              <img src="/bath.png" alt="" className="w-5 h-5" />
+              <span>{post.bathroom || 0} bath</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p className="font-bold text-slate-800 mb-3 text-base">Nearby Places</p>
+          <div className="flex justify-between p-4 bg-white rounded-xl shadow-sm gap-2">
+            <div className="flex flex-col items-center text-center gap-1 flex-1">
+              <img src="/school.png" alt="" className="w-5 h-5" />
+              <span className="font-bold text-xs text-slate-700">School</span>
+              <p className="text-[10px] text-slate-500">
+                {post.postDetail?.school > 999 ? post.postDetail.school / 1000 + "km" : (post.postDetail?.school || 0) + "m"} away
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center gap-1 flex-1 border-x border-slate-100">
+              <img src="/pet.png" alt="" className="w-5 h-5" />
+              <span className="font-bold text-xs text-slate-700">Bus Stop</span>
+              <p className="text-[10px] text-slate-500">{post.postDetail?.bus || 0}m away</p>
+            </div>
+            <div className="flex flex-col items-center text-center gap-1 flex-1">
+              <img src="/fee.png" alt="" className="w-5 h-5" />
+              <span className="font-bold text-xs text-slate-700">Restaurant</span>
+              <p className="text-[10px] text-slate-500">{post.postDetail?.restaurant || 0}m away</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p className="font-bold text-slate-800 mb-3 text-base">Location</p>
+          <div className="w-full h-[200px] rounded-xl overflow-hidden shadow-sm border border-slate-100">
             <Map items={[post]} />
           </div>
         </div>
 
-        {/* Action Button Controls */}
-        <div className="flex gap-4 mt-6 lg:mt-auto pt-6 border-t border-[#f7deda]">
-          <button className="w-full p-3 bg-white border-2 border-[#fece51] hover:bg-yellow-50 rounded-xl font-bold text-slate-700 text-sm md:text-base transition-all active:scale-95 cursor-pointer">
-            Message Owner
+        {/* 🛠️ ACTION BUTTONS WITH TAILWIND DESIGN */}
+        <div className="flex justify-between gap-4 mt-auto pt-4">
+          <button 
+            onClick={handleMessageOwner} 
+            disabled={chatLoading}
+            className="flex items-center justify-center gap-2 p-4 bg-white border border-[#fece51] rounded-md text-sm font-medium text-slate-700 cursor-pointer hover:bg-yellow-50/50 active:scale-95 transition-all flex-1 disabled:opacity-50"
+          >
+            <img src="/chat.png" alt="" className="w-4 h-4" />
+            {chatLoading ? "Opening..." : "Send a Message"}
           </button>
-
+          
           <button
             onClick={handleSave}
             disabled={saveLoading}
-            className={`w-full p-3 border-2 border-[#fece51] rounded-xl font-bold text-sm md:text-base transition-all shadow-md active:scale-95 cursor-pointer ${
-              saved
-                ? "bg-[#fece51] text-slate-800 hover:bg-yellow-400"
-                : "bg-white text-slate-700 hover:bg-yellow-50"
-            }`}
+            style={{ backgroundColor: saved ? "#fece51" : "white" }}
+            className="flex items-center justify-center gap-2 p-4 border border-[#fece51] rounded-md text-sm font-medium text-slate-700 cursor-pointer active:scale-95 transition-all flex-1"
           >
-            {saveLoading ? "Processing..." : saved ? "Saved ✔" : "Save Place"}
+            <img src="/save.png" alt="" className="w-4 h-4" />
+            {saveLoading ? "Processing..." : saved ? "Place Saved" : "Save the Place"}
           </button>
         </div>
       </div>
+
     </div>
   );
 }

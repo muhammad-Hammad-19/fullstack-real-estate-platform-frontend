@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { cityUppercase } from "../../utilis";
 
 function SearchBar() {
   // Har cheez ke liye alag aur simple state
-  const [type, setType] = useState("buy");
+  const [type, setType] = useState("");
   const [city, setCity] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -35,7 +36,7 @@ function SearchBar() {
           Rent
         </button>
       </div>
-
+      
       {/* 2. SEARCH FORM */}
       <form className="flex flex-col sm:flex-row border border-slate-200 rounded-b-md sm:rounded-tr-md overflow-hidden bg-white shadow-sm">
         {/* City Input */}
@@ -43,7 +44,10 @@ function SearchBar() {
           type="text"
           placeholder="City Location"
           value={city}
-          onChange={(e) => setCity(e.target.value)} // Ek line mein data save
+          onChange={(e) => {
+            let cityName = cityUppercase(e.target.value);
+            setCity(cityName); // State update karne ke liye
+          }} // Ek line mein data save
           className="flex-1 p-4 border-b sm:border-b-0 sm:border-r border-slate-100 text-sm focus:outline-none"
         />
 
@@ -55,7 +59,7 @@ function SearchBar() {
           onChange={(e) => setMinPrice(e.target.value)} // Ek line mein data save
           className="flex-1 p-4 border-b sm:border-b-0 sm:border-r border-slate-100 text-sm focus:outline-none"
         />
-        
+
         {/* Max Price Input */}
         <input
           type="number"
@@ -64,7 +68,7 @@ function SearchBar() {
           onChange={(e) => setMaxPrice(e.target.value)} // Ek line mein data save
           className="flex-1 p-4 text-sm focus:outline-none"
         />
-        
+
         <Link
           to={`/list?type=${type}&city=${city}&minPrice=${minPrice}&maxPrice=${maxPrice}`}
           className="bg-[#fece51] hover:bg-yellow-400 flex items-center justify-center p-4 sm:px-6"
