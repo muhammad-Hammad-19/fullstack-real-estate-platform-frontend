@@ -16,7 +16,6 @@ const ListPage = () => {
     const fetchFilteredPosts = async () => {
       try {
         setLoading(true);
-
         setError("");
 
         const res = await axios.get(
@@ -25,9 +24,6 @@ const ListPage = () => {
             withCredentials: true,
           },
         );
-        console.log(res.data);
-        
-        // Backend response structure ke mutabiq data load karna
 
         setPosts(res.data.data || res.data);
       } catch (err) {

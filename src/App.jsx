@@ -14,10 +14,11 @@ import Login from "./pages/login/Login";
 import Signup from "./pages/signup/Signup";
 import ProfileUpdate from "./pages/profileUpdate/ProfileUpdate";
 import ProfilePage from "./pages/profile/ProfilePage";
-import NewPostPage from "./pages/newPostPage/NewPostPage";
+
 import ListPage from "./pages/listPage/ListPage";
 import SinglePage from "./pages/singlePage/SinglePage";
 
+import NewPostPage from "./pages/newPostPage/NewPostPage";
 const App = () => {
   const router = createBrowserRouter([
     {

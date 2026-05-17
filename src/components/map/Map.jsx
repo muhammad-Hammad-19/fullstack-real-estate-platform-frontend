@@ -2,7 +2,6 @@ import React from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
-// React Leaflet ke default marker icons ka bug fix karne ke liye ye zaroori hota hai
 import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
@@ -16,32 +15,28 @@ L.Icon.Default.mergeOptions({
 });
 
 const Map = ({ items = [] }) => {
-  // Default position agar list khali ho (London)
-  const defaultCenter = [51.505, -0.09];
+  // Karachi exact center points
+  const karachiCenter = [24.8607, 67.0011];
 
-  // Agar list mein items hain toh pehle item ki location uthayega, nahi toh default center
+  // Agar items hain aur unme latitude-longitude hai tabhi unpe center kare, warna Karachi par hi rahe
   const centerPosition =
-    items.length > 0 && items[0].latitude && items[0].longitude
+    items.length > 0 && items[0]?.latitude && items[0]?.longitude
       ? [items[0].latitude, items[0].longitude]
-      : defaultCenter;
+      : karachiCenter;
 
   return (
     <MapContainer
       center={centerPosition}
-      zoom={items.length > 0 ? 11 : 13}
-      scrollWheelZoom={false}
-      className="w-full h-full" // Tailwind classes taake map full container cover kare
+      zoom={items.length > 0 ? 11 : 12}
+      scrollWheelZoom={true} // Mouse scroll se zoom bhee hoga aur mouse click dragging bhee smoothly chalegi
+      dragging={true}        // Mouse se pakar kar map ghumane ke liye strict true
+      className="w-full h-full"
     >
-      {/* 
-        Yahan humne Google Maps ka official server URL lagaya hai jisme '&hl=en' query parameter hai.
-        Yeh pure map par har haal mein English language ko strict force karega, chahe aapka internet IP Pakistan ka ho ya browser setting Urdu ho!
-      */}
       <TileLayer
         attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
         url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en"
       />
 
-      {/* Agar items pass ho rahe hain toh unke dynamic pins show karega */}
       {items.length > 0 ? (
         items.map(
           (item) =>
@@ -62,11 +57,10 @@ const Map = ({ items = [] }) => {
             ),
         )
       ) : (
-        // Agar koi item nahi hai toh sirf single default marker dikhayega
-        <Marker position={defaultCenter}>
+        <Marker position={karachiCenter}>
           <Popup>
-            <div className="text-xs font-sans">
-              A pretty CSS3 popup. <br /> Easily customizable.
+            <div className="text-xs font-sans font-semibold">
+              Karachi, Pakistan
             </div>
           </Popup>
         </Marker>

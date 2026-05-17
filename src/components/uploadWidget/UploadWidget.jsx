@@ -1,28 +1,39 @@
 import { useEffect } from "react";
 
-const UploadWidget = ({ setAvatar }) => {
+const UploadWidget = ({ uwConfig, setState }) => {
   useEffect(() => {
     const widget = window.cloudinary.createUploadWidget(
       {
-        cloudName: "hzxyensd5",
-        uploadPreset: "aoh4fpwm",
+        cloudName: uwConfig?.cloudName || "hzxyensd5",
+        uploadPreset: uwConfig?.uploadPreset || "aoh4fpwm",
+        folder: uwConfig?.folder || "posts",
       },
       (error, result) => {
         if (!error && result.event === "success") {
-          setAvatar(result.info.secure_url);
+          // Parent (NewPostPage) ke images array me naye image URL ko add karna
+          setState((prev) => [...prev, result.info.secure_url]);
         }
       }
     );
     
+    const handleUploadClick = () => widget.open();
+
     document
       .getElementById("upload_widget")
-      .addEventListener("click", () => widget.open());
-  }, [setAvatar]);
+      .addEventListener("click", handleUploadClick);
+
+    // Cleanup structure to prevent memory leaks
+    return () => {
+      const btn = document.getElementById("upload_widget");
+      if (btn) btn.removeEventListener("click", handleUploadClick);
+    };
+  }, [uwConfig, setState]);
 
   return (
     <button
+      type="button"
       id="upload_widget"
-      className="bg-[#51c7fe] text-white px-6 py-3 rounded-md"
+      className="bg-[#51c7fe] text-white px-6 py-3 rounded-md font-semibold cursor-pointer shadow-sm hover:bg-[#40b6ed] transition-all"
     >
       Upload Photo
     </button>
