@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import axios from "axios";
 import Map from "../../components/map/Map";
-import Slider from "../../components/slider/Slider"; 
+import Slider from "../../components/slider/Slider";
 import { useUser } from "../../context/AuthContext";
 
 function SinglePage() {
@@ -27,11 +27,13 @@ function SinglePage() {
 
         const res = await axios.get(
           `http://localhost:3000/api/posts/${id}/details`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
         const exactPostData = res.data.data || res.data;
-        const finalPost = Array.isArray(exactPostData) ? exactPostData[0] : exactPostData;
+        const finalPost = Array.isArray(exactPostData)
+          ? exactPostData[0]
+          : exactPostData;
 
         if (!finalPost) {
           setError("Property details nahi mil saki!");
@@ -44,7 +46,7 @@ function SinglePage() {
           try {
             const savedCheck = await axios.get(
               "http://localhost:3000/api/users/savedPosts",
-              { withCredentials: true }
+              { withCredentials: true },
             );
             const savedList = savedCheck.data.data || savedCheck.data || [];
 
@@ -53,7 +55,7 @@ function SinglePage() {
                 item.postId === id ||
                 item.id === id ||
                 item.post?._id === id ||
-                item.post?.id === id
+                item.post?.id === id,
             );
             setSaved(isThisPostSaved);
           } catch (err) {
@@ -62,7 +64,10 @@ function SinglePage() {
         }
       } catch (err) {
         console.error("Single post load error:", err);
-        setError(err.response?.data?.message || "Property details load karne mein error aaya!");
+        setError(
+          err.response?.data?.message ||
+            "Property details load karne mein error aaya!",
+        );
       } finally {
         setLoading(false);
       }
@@ -83,7 +88,7 @@ function SinglePage() {
       const response = await axios.post(
         "http://localhost:3000/api/users/save",
         { postId: id },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       if (response.data.success) {
@@ -122,9 +127,10 @@ function SinglePage() {
       await axios.post(
         "http://localhost:3000/api/chats",
         { receiverId: ownerId },
-        { withCredentials: true }
+        { withCredentials: true },
       );
-      navigate("/profile"); 
+
+      navigate("/profile");
     } catch (err) {
       console.error("Chat backend redirection:", err);
       navigate("/profile");
@@ -144,8 +150,13 @@ function SinglePage() {
   if (error || !post) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] gap-4 bg-slate-50">
-        <p className="text-red-500 font-semibold text-lg">{error || "Post data unavailable."}</p>
-        <button onClick={() => navigate(-1)} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        <p className="text-red-500 font-semibold text-lg">
+          {error || "Post data unavailable."}
+        </p>
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium"
+        >
           Go Back
         </button>
       </div>
@@ -155,44 +166,48 @@ function SinglePage() {
   return (
     // MAIN LAYOUT: Mobile par columns (flex-col), Large screen par row layout (flex-row)
     <div className="flex flex-col lg:flex-row h-full w-full bg-white">
-      
       {/* 🟢 LEFT AREA (Details & Description) */}
       <div className="flex-[3] h-full overflow-y-auto p-4 md:p-8 lg:pr-12">
         <div className="w-full">
           {/* Slider handles main photo and side thumbnail grids via Tailwind structure internally */}
           <Slider images={post.images || []} />
-          
+
           <div className="mt-12">
             {/* Header Content & User Info Wrapper */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
               <div className="flex flex-col gap-4">
-                <h1 className="text-2xl md:text-3xl font-normal text-slate-800 tracking-tight">{post.title}</h1>
+                <h1 className="text-2xl md:text-3xl font-normal text-slate-800 tracking-tight">
+                  {post.title}
+                </h1>
                 <div className="flex items-center gap-1.5 text-slate-400 text-sm">
                   <img src="/pin.png" alt="pin location" className="w-4 h-4" />
-                  <span>{post.address}, {post.city}</span>
+                  <span>
+                    {post.address}, {post.city}
+                  </span>
                 </div>
                 <div className="bg-[#fece51]/40 text-slate-800 text-xl px-2 py-1 rounded-md w-max font-light">
                   Rs. {post.price ? post.price.toLocaleString() : 0}
                 </div>
               </div>
-              
+
               {/* 👤 Owner Profile badge box inside layout */}
               <div className="flex flex-col items-center justify-center gap-3 px-12 py-4 rounded-xl bg-[#fece51]/20 font-semibold text-sm">
-                <img 
-                  src={post.user?.avatar || "/noavatar.png"} 
-                  alt={post.user?.username || "Owner"} 
+                <img
+                  src={post.user?.avatar || "/noavatar.png"}
+                  alt={post.user?.username || "Owner"}
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <span>{post.user?.username || "Agent"}</span>
               </div>
             </div>
-            
+
             {/* Safe HTML Content Description */}
             <div
               className="mt-12 text-slate-600 leading-relaxed text-sm md:text-base border-t pt-8"
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(
-                  post.postDetail?.desc || "No description provided for this listing."
+                  post.postDetail?.desc ||
+                    "No description provided for this listing.",
                 ),
               }}
             ></div>
@@ -206,9 +221,15 @@ function SinglePage() {
           <p className="font-bold text-slate-800 mb-3 text-base">General</p>
           <div className="flex flex-col gap-5 p-5 bg-white rounded-xl shadow-sm">
             <div className="flex items-center gap-3">
-              <img src="/utility.png" alt="" className="w-6 h-6 p-1 bg-[#fece51]/20 rounded" />
+              <img
+                src="/utility.png"
+                alt=""
+                className="w-6 h-6 p-1 bg-[#fece51]/20 rounded"
+              />
               <div className="text-xs md:text-sm">
-                <span className="font-bold block text-slate-700">Utilities</span>
+                <span className="font-bold block text-slate-700">
+                  Utilities
+                </span>
                 {post.postDetail?.utilities === "owner" ? (
                   <p className="text-slate-500">Owner is responsible</p>
                 ) : (
@@ -217,9 +238,15 @@ function SinglePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <img src="/pet.png" alt="" className="w-6 h-6 p-1 bg-[#fece51]/20 rounded" />
+              <img
+                src="/pet.png"
+                alt=""
+                className="w-6 h-6 p-1 bg-[#fece51]/20 rounded"
+              />
               <div className="text-xs md:text-sm">
-                <span className="font-bold block text-slate-700">Pet Policy</span>
+                <span className="font-bold block text-slate-700">
+                  Pet Policy
+                </span>
                 {post.postDetail?.pet === "allowed" ? (
                   <p className="text-slate-500">Pets Allowed</p>
                 ) : (
@@ -228,10 +255,18 @@ function SinglePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <img src="/fee.png" alt="" className="w-6 h-6 p-1 bg-[#fece51]/20 rounded" />
+              <img
+                src="/fee.png"
+                alt=""
+                className="w-6 h-6 p-1 bg-[#fece51]/20 rounded"
+              />
               <div className="text-xs md:text-sm">
-                <span className="font-bold block text-slate-700">Income Policy</span>
-                <p className="text-slate-500">{post.postDetail?.income || "Standard documentation"}</p>
+                <span className="font-bold block text-slate-700">
+                  Income Policy
+                </span>
+                <p className="text-slate-500">
+                  {post.postDetail?.income || "Standard documentation"}
+                </p>
               </div>
             </div>
           </div>
@@ -256,24 +291,35 @@ function SinglePage() {
         </div>
 
         <div>
-          <p className="font-bold text-slate-800 mb-3 text-base">Nearby Places</p>
+          <p className="font-bold text-slate-800 mb-3 text-base">
+            Nearby Places
+          </p>
           <div className="flex justify-between p-4 bg-white rounded-xl shadow-sm gap-2">
             <div className="flex flex-col items-center text-center gap-1 flex-1">
               <img src="/school.png" alt="" className="w-5 h-5" />
               <span className="font-bold text-xs text-slate-700">School</span>
               <p className="text-[10px] text-slate-500">
-                {post.postDetail?.school > 999 ? post.postDetail.school / 1000 + "km" : (post.postDetail?.school || 0) + "m"} away
+                {post.postDetail?.school > 999
+                  ? post.postDetail.school / 1000 + "km"
+                  : (post.postDetail?.school || 0) + "m"}{" "}
+                away
               </p>
             </div>
             <div className="flex flex-col items-center text-center gap-1 flex-1 border-x border-slate-100">
               <img src="/pet.png" alt="" className="w-5 h-5" />
               <span className="font-bold text-xs text-slate-700">Bus Stop</span>
-              <p className="text-[10px] text-slate-500">{post.postDetail?.bus || 0}m away</p>
+              <p className="text-[10px] text-slate-500">
+                {post.postDetail?.bus || 0}m away
+              </p>
             </div>
             <div className="flex flex-col items-center text-center gap-1 flex-1">
               <img src="/fee.png" alt="" className="w-5 h-5" />
-              <span className="font-bold text-xs text-slate-700">Restaurant</span>
-              <p className="text-[10px] text-slate-500">{post.postDetail?.restaurant || 0}m away</p>
+              <span className="font-bold text-xs text-slate-700">
+                Restaurant
+              </span>
+              <p className="text-[10px] text-slate-500">
+                {post.postDetail?.restaurant || 0}m away
+              </p>
             </div>
           </div>
         </div>
@@ -287,15 +333,15 @@ function SinglePage() {
 
         {/* 🛠️ ACTION BUTTONS WITH TAILWIND DESIGN */}
         <div className="flex justify-between gap-4 mt-auto pt-4">
-          <button 
-            onClick={handleMessageOwner} 
+          <button
+            onClick={handleMessageOwner}
             disabled={chatLoading}
             className="flex items-center justify-center gap-2 p-4 bg-white border border-[#fece51] rounded-md text-sm font-medium text-slate-700 cursor-pointer hover:bg-yellow-50/50 active:scale-95 transition-all flex-1 disabled:opacity-50"
           >
             <img src="/chat.png" alt="" className="w-4 h-4" />
             {chatLoading ? "Opening..." : "Send a Message"}
           </button>
-          
+
           <button
             onClick={handleSave}
             disabled={saveLoading}
@@ -303,11 +349,14 @@ function SinglePage() {
             className="flex items-center justify-center gap-2 p-4 border border-[#fece51] rounded-md text-sm font-medium text-slate-700 cursor-pointer active:scale-95 transition-all flex-1"
           >
             <img src="/save.png" alt="" className="w-4 h-4" />
-            {saveLoading ? "Processing..." : saved ? "Place Saved" : "Save the Place"}
+            {saveLoading
+              ? "Processing..."
+              : saved
+                ? "Place Saved"
+                : "Save the Place"}
           </button>
         </div>
       </div>
-
     </div>
   );
 }
