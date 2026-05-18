@@ -30,6 +30,7 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     user && socket?.emit("register", currentUserId);
+    
   }, [user, socket]);
 
   return (
