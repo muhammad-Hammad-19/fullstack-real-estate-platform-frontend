@@ -36,7 +36,6 @@ const App = () => {
           element: <SinglePage />,
         },
 
-
         {
           element: <PublicRoute />,
           children: [
@@ -50,10 +49,10 @@ const App = () => {
             },
           ],
         },
-        
+
         // 🔒 PROTECTED ROUTES (Sirf logged-in users ke liye)
         {
-          element: <RequireAuth />,
+          element: <ProtectedRoute />,
           children: [
             {
               path: "/profile",
