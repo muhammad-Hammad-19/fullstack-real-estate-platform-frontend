@@ -18,6 +18,27 @@ const Navbar = () => {
     if (user && socket) initSocketListener(socket);
   }, [user, socket, fetchChats, initSocketListener]);
 
+  // Helper function to check if avatar path is valid
+  const hasAvatar = (avatarPath) => {
+    return !!avatarPath && avatarPath !== "" && avatarPath !== "/noavatar.png";
+  };
+
+  // Helper function to resolve dynamic image path safely
+  const resolveAvatar = (avatarPath) => {
+    const BASE_URL = "http://localhost:3000"; // Dynamic backend node config
+    if (!avatarPath) return null;
+    if (avatarPath.startsWith("http://") || avatarPath.startsWith("https://")) {
+      return avatarPath;
+    }
+    return `${BASE_URL}${avatarPath.startsWith("/") ? "" : "/"}${avatarPath}`;
+  };
+
+  // Utility to get the first capital letter of the username
+  const getInitial = (name) => {
+    if (!name) return "?";
+    return name.charAt(0).toUpperCase();
+  };
+
   return (
     <>
       {/* MAIN NAVBAR */}
@@ -68,11 +89,17 @@ const Navbar = () => {
             {user ? (
               <div className="flex items-center gap-3 md:gap-5">
                 <div className="hidden sm:flex items-center gap-2.5">
-                  <img
-                    src={user.avatar || "/noavatar.png"}
-                    alt="user"
-                    className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border border-slate-200"
-                  />
+                  {hasAvatar(user.avatar) ? (
+                    <img
+                      src={resolveAvatar(user.avatar)}
+                      alt="user"
+                      className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border border-slate-200 shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-900 text-white border border-slate-200 shadow-sm flex items-center justify-center font-bold text-xs md:text-sm select-none">
+                      {getInitial(user.username)}
+                    </div>
+                  )}
                   <span className="font-semibold text-xs md:text-sm text-slate-700 max-w-[100px] truncate">
                     {user.username}
                   </span>
@@ -152,21 +179,21 @@ const Navbar = () => {
           Home
         </Link>
         <Link
-          to="/"
+          to="/about"
           onClick={() => setOpen(false)}
           className="hover:text-[#fece51] transition py-1 border-b border-slate-800/50"
         >
           About
         </Link>
         <Link
-          to="/"
+          to="/contact"
           onClick={() => setOpen(false)}
           className="hover:text-[#fece51] transition py-1 border-b border-slate-800/50"
         >
           Contact
         </Link>
         <Link
-          to="/"
+          to="/agents"
           onClick={() => setOpen(false)}
           className="hover:text-[#fece51] transition py-1 border-b border-slate-800/50"
         >
@@ -176,12 +203,18 @@ const Navbar = () => {
         <div className="mt-auto mb-10 w-full">
           {user ? (
             <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 bg-slate-800/60 p-3 rounded-lg">
-                <img
-                  src={user.avatar || "/noavatar.png"}
-                  alt="user avatar"
-                  className="w-10 h-10 rounded-full object-cover border border-slate-700"
-                />
+              <div className="flex items-center gap-3 bg-slate-800/60 p-3 rounded-lg border border-slate-700/50">
+                {hasAvatar(user.avatar) ? (
+                  <img
+                    src={resolveAvatar(user.avatar)}
+                    alt="user avatar"
+                    className="w-10 h-10 rounded-full object-cover border border-slate-700"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-white text-slate-900 shadow-sm flex items-center justify-center font-bold text-sm select-none shrink-0">
+                    {getInitial(user.username)}
+                  </div>
+                )}
                 <span className="font-bold text-sm truncate">
                   {user.username}
                 </span>

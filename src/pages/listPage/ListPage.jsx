@@ -47,7 +47,7 @@ const ListPage = () => {
       <div className="flex-[3] h-full overflow-y-auto p-4 md:p-6">
         <div className="max-w-[750px] mx-auto flex flex-col gap-8 pb-10">
           <Filter />
-
+          
           <div className="flex flex-col gap-6">
             {loading ? (
               <p className="text-center text-slate-500 py-10 font-medium">

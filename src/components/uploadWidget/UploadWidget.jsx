@@ -13,8 +13,12 @@ const UploadWidget = ({ uwConfig, setState }) => {
       (error, result) => {
         if (!error && result.event === "success") {
           if (typeof setState === "function") {
-            // Direct secure_url bhej rahe hain bina extra array updates ke
-            setState(result.info.secure_url);
+            // FIX: Single string bhejne ke bajaye purani array mein new URL append kar rahe hain
+            setState((prev) => {
+              // Agar kisi wajah se prev array nahi hai, toh empty array se fallback karein
+              const currentImages = Array.isArray(prev) ? prev : [];
+              return [...currentImages, result.info.secure_url];
+            });
           } else {
             console.error("🎯 Error: Parent component se 'setState' prop sahi se nahi mili!");
           }
