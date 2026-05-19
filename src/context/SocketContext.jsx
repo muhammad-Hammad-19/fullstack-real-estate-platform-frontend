@@ -1,49 +1,76 @@
-// UserContext.jsx
+// UserContext.jsx (Ya AuthContext.jsx jo aap use kar rahe hain)
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-// Context create
-const SocketContext = createContext(null);
+const AuthSocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
-  // State
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null,
-  );
+  // 1. Safe User State Setup
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || null;
+    } catch (e) {
+      return null;
+    }
+  });
 
   const [socket, setSocket] = useState(null);
 
-  const currentUserId = user.id || user.userId;
-
+  // 2. Global Level Par Single Socket Instance Engine
   useEffect(() => {
+    if (!user) {
+      // Agar user logout ho jaye to socket disconnect kar do
+      if (socket) {
+        socket.disconnect();
+        setSocket(null);
+      }
+      return;
+    }
+
+    const currentUserId = user.id || user.userId || user._id;
+
+    // Single pipeline connection initialize
     const socketInstance = io("http://localhost:3000", {
-      withCredentials: true, // Agar cookies/sessions headers backend par pass karne hon
+      withCredentials: true,
+    });
+
+    socketInstance.on("connect", () => {
+      console.log("⚡ Secure Socket Pipeline Connected:", socketInstance.id);
+      // Connected hote hi user register karwao
+      socketInstance.emit("register", currentUserId);
     });
 
     setSocket(socketInstance);
-    
-    // Cleanup: Jab component unmount ho to purana connection close ho jaye
+
+    // Cleanup on unmount or user change
     return () => {
       socketInstance.disconnect();
     };
-  }, []);
+  }, [user]);
 
-  useEffect(() => {
-    user && socket?.emit("register", currentUserId);
-    
-  }, [user, socket]);
+  // User details update karne ka function
+  const updateUser = (data) => {
+    if (data) {
+      localStorage.setItem("user", JSON.stringify(data));
+      setUser(data);
+    } else {
+      localStorage.removeItem("user");
+      setUser(null);
+    }
+  };
 
   return (
-    <SocketContext.Provider
-      value={{
-        socket,
-      }}
-    >
+    <AuthSocketContext.Provider value={{ user, updateUser, socket }}>
       {children}
-    </SocketContext.Provider>
+    </AuthSocketContext.Provider>
   );
 };
 
+// 🎯 Yeh hook ab user aur socket dono safely return karega
 export const useUser = () => {
-  return useContext(SocketContext);
+  const context = useContext(AuthSocketContext);
+  if (!context) {
+    throw new Error("useUser must be used within a SocketProvider");
+  }
+  return context;
 };

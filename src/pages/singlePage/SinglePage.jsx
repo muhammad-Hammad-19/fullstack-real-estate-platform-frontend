@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import axios from "axios";
@@ -139,6 +139,18 @@ function SinglePage() {
     }
   };
 
+  // 🛠️ CRITICAL VALVE: Check coordinates strictly before rendering Map Container
+  const hasValidCoordinates = useMemo(() => {
+    if (!post) return false;
+    const lat = parseFloat(post.latitude);
+    const lng = parseFloat(post.longitude);
+
+    return (
+      !isNaN(lat) && lat >= -90 && lat <= 90 &&
+      !isNaN(lng) && lng >= -180 && lng <= 180
+    );
+  }, [post]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-100px)] text-lg font-medium text-slate-500 bg-slate-50">
@@ -164,16 +176,13 @@ function SinglePage() {
   }
 
   return (
-    // MAIN LAYOUT: Mobile par columns (flex-col), Large screen par row layout (flex-row)
     <div className="flex flex-col lg:flex-row h-full w-full bg-white">
       {/* 🟢 LEFT AREA (Details & Description) */}
       <div className="flex-[3] h-full overflow-y-auto p-4 md:p-8 lg:pr-12">
         <div className="w-full">
-          {/* Slider handles main photo and side thumbnail grids via Tailwind structure internally */}
           <Slider images={post.images || []} />
 
           <div className="mt-12">
-            {/* Header Content & User Info Wrapper */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
               <div className="flex flex-col gap-4">
                 <h1 className="text-2xl md:text-3xl font-normal text-slate-800 tracking-tight">
@@ -190,7 +199,6 @@ function SinglePage() {
                 </div>
               </div>
 
-              {/* 👤 Owner Profile badge box inside layout */}
               <div className="flex flex-col items-center justify-center gap-3 px-12 py-4 rounded-xl bg-[#fece51]/20 font-semibold text-sm">
                 <img
                   src={post.user?.avatar || "/noavatar.png"}
@@ -201,7 +209,6 @@ function SinglePage() {
               </div>
             </div>
 
-            {/* Safe HTML Content Description */}
             <div
               className="mt-12 text-slate-600 leading-relaxed text-sm md:text-base border-t pt-8"
               dangerouslySetInnerHTML={{
@@ -327,11 +334,19 @@ function SinglePage() {
         <div>
           <p className="font-bold text-slate-800 mb-3 text-base">Location</p>
           <div className="w-full h-[200px] rounded-xl overflow-hidden shadow-sm border border-slate-100">
-            <Map items={[post]} />
+            {/* 🛠️ FIXED DESIGN INTERCEPTOR */}
+            {hasValidCoordinates ? (
+              <Map items={[post]} />
+            ) : (
+              <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-400 gap-1 text-xs px-4 text-center">
+                <span className="text-xl">📍</span>
+                <p className="font-medium text-slate-500">Map unavailable</p>
+                <p className="text-[10px]">This listing has invalid geographic coordinates.</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 🛠️ ACTION BUTTONS WITH TAILWIND DESIGN */}
         <div className="flex justify-between gap-4 mt-auto pt-4">
           <button
             onClick={handleMessageOwner}

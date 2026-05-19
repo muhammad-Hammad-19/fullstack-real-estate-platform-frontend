@@ -24,7 +24,8 @@ const ProfilePage = () => {
   const { user: currentUser, updateUser } = useUser();
   const userId = currentUser?.id || currentUser?.userId || currentUser?._id;
 
-  const decreaseNotification = useNotificationStore((state) => state.decrease);
+  const decreaseNotification = useNotificationStore((state) => state.decreaseBy);
+
   const increaseNotification = useNotificationStore((state) => state.increase);
 
   const [userPosts, setUserPosts] = useState([]);
@@ -60,42 +61,64 @@ const ProfilePage = () => {
   }, [userId]);
 
   // ⚡ LIVE WIRE INTERCEPTOR
+  // ⚡ LIVE WIRE INTERCEPTOR (PERFECTLY FIXED)
+  // ⚡ LIVE WIRE INTERCEPTOR (REAL-TIME NOTIFICATION FIX)
+  // 🎯 Top par states ke saath yeh ref declare karein (ProfilePage ke andar)
+
+  const processedMessageIds = useRef(new Set());
+
+  // ⚡ FINAL WIRE INTERCEPTOR (STRICT REAL-TIME NOTIFICATION LOCK)
   useEffect(() => {
     if (!socket) return;
 
     const handleLiveIncoming = (data) => {
       console.log("📩 Live Message Intercepted on Frontend:", data);
-      if (!data || !data.chatId) return;
+      if (!data || !data.chatId || !data.id) return;
 
-      setActiveChat((latestActiveChat) => {
-        if (!latestActiveChat) {
-          increaseNotification();
-          return null;
-        }
+      // 🛑 DUPICATION LOCK: Agar yeh message ID pehle hi process ho chuki hai, to yahin ruk jao
+      if (processedMessageIds.current.has(data.id)) {
+        console.log(
+          "🛡️ Message ID already processed. Ignoring count increase.",
+        );
+        return;
+      }
+      // Record this ID as processed
+      processedMessageIds.current.add(data.id);
 
-        const currentChatWindowId = latestActiveChat.id || latestActiveChat._id;
-        const isCurrentChat =
-          String(currentChatWindowId) === String(data.chatId);
+      const currentActiveChatId = activeChat
+        ? activeChat.id || activeChat._id
+        : null;
+      const isChatOpenForThisMessage =
+        currentActiveChatId &&
+        String(currentActiveChatId) === String(data.chatId);
 
-        if (isCurrentChat) {
+      // 🎯 COUNT CONDITION: Agar chat open NAHI hai, sirf TAB count barhaen strictly 1 bar
+      if (!isChatOpenForThisMessage) {
+        console.log(
+          "🚀 Safe Zone: Increasing Notification Count strictly ONCE.",
+        );
+        increaseNotification();
+      }
+
+      // Active Chat ki state update karein agar chat open hai
+      if (isChatOpenForThisMessage) {
+        setActiveChat((latestActiveChat) => {
+          if (!latestActiveChat) return null;
           const currentMessages = latestActiveChat.messages || [];
+
           const alreadyExists = currentMessages.some(
             (m) => String(m.id || m._id) === String(data.id || data._id),
           );
-
           if (alreadyExists) return latestActiveChat;
 
           return {
             ...latestActiveChat,
             messages: [...currentMessages, data],
           };
-        } else {
-          increaseNotification();
-          return latestActiveChat;
-        }
-      });
+        });
+      }
 
-      // Update the left conversation panel in real-time
+      // Sidebar update logic
       setConversations((prevInbox) =>
         prevInbox.map((chatItem) => {
           const chatItemId = chatItem.id || chatItem._id;
@@ -103,7 +126,7 @@ const ProfilePage = () => {
             return {
               ...chatItem,
               lastMessage: data.text,
-              seenBy: [data.userId],
+              seenBy: [data.userId], // Naye message par naye siray se seenBy reset
             };
           }
           return chatItem;
@@ -111,13 +134,13 @@ const ProfilePage = () => {
       );
     };
 
+    socket.off("getMessage", handleLiveIncoming);
     socket.on("getMessage", handleLiveIncoming);
 
     return () => {
       socket.off("getMessage", handleLiveIncoming);
     };
-  }, [increaseNotification]);
-
+  }, [activeChat, increaseNotification]); // Strict core alignment // 👈 activeChat ko dependency mein daalna zaroori hai taake fresh id mile; // No other dependencies to avoid re-subscription loops // Isme activeChat ya conversations mat dalna varna loop banega!
   // Fetch Dashboard Core Data
   useEffect(() => {
     if (!currentUser) return;
@@ -138,7 +161,7 @@ const ProfilePage = () => {
             withCredentials: true,
           }),
         ]);
-        
+
         setUserPosts(
           Array.isArray(postsRes.data.data)
             ? postsRes.data.data
@@ -160,44 +183,60 @@ const ProfilePage = () => {
   }, [currentUser, userId]);
 
   // 🛠️ FIXED CHAT SELECTION (Preserving Receiver Identity cleanly)
+// 🛠️ REVOLUTIONARY CHAT SELECTION ENGINE (DIRECT BACKEND SYNC)
   const handleOpenChat = async (chat) => {
     try {
       const chatId = chat.id || chat._id;
       const isUnread = !chat?.seenBy?.includes(userId);
+
+      // 1. Pehle chat ka poora data fetch karein taake messages screen par aa jayein
       const res = await axios.get(`http://localhost:3000/api/chats/${chatId}`, {
         withCredentials: true,
       });
-
-      // Hum explicitly context database logic aur initial receiver reference data ko bind kar rahe hain
       const completeChatData = res.data.data || res.data;
-      
-      setActiveChat({ 
-        ...completeChatData, 
-        receiver: chat.receiver || completeChatData.receiver 
+
+      setActiveChat({
+        ...completeChatData,
+        receiver: chat.receiver || completeChatData.receiver,
       });
 
+      // 2. Sidebar/Inbox list mein foran is chat ko seen mark karein (UI instantly updates)
       setConversations((prev) =>
         prev.map((c) => {
           const cId = c.id || c._id;
-          return cId === chatId
-            ? { ...c, seenBy: [...(c.seenBy || []), userId] }
-            : c;
+          if (cId === chatId) {
+            const currentSeenBy = c.seenBy || [];
+            return {
+              ...c,
+              seenBy: currentSeenBy.includes(userId)
+                ? currentSeenBy
+                : [...currentSeenBy, userId],
+            };
+          }
+          return c;
         }),
       );
 
+      // 3. 🎯 THE ULTIMATE NOTIFICATION RESET LOCK:
+      // Agar yeh chat unread thi, to backend par isko READ mark karo
+      // aur direct database se real-time fresh count pull karlo!
       if (isUnread) {
-        decreaseNotification();
+        console.log("🔄 Marking chat as read on backend and re-fetching total count...");
+        
+        // Backend par seenBy array mein aapki ID push hogi
         await axios.put(
           `http://localhost:3000/api/chats/read/${chatId}`,
           {},
-          { withCredentials: true },
+          { withCredentials: true }
         );
+
+        // 🔥 Ginti minus karne ka jhanjhat khatam! Direct backend se naya exact count lao:
+        useNotificationStore.getState().fetchChats();
       }
     } catch (err) {
       console.error("Failed to load chat history:", err);
     }
   };
-
   // 🛠️ FIXED LIVE TRANSMISSION ENGINE (Targeting specific keys)
   const handleSendMessage = async () => {
     if (!chatMessage.trim() || !activeChat) return;
@@ -209,10 +248,13 @@ const ProfilePage = () => {
       activeChat.receiver?.id ||
       activeChat.receiver?.userId ||
       activeChat.receiver?._id ||
-      (activeChat.users && activeChat.users.find(id => String(id) !== String(userId)));
+      (activeChat.users &&
+        activeChat.users.find((id) => String(id) !== String(userId)));
 
     if (!targetReceiverId) {
-      console.error("❌ Transmission halt: Could not parse target receiver ID context.");
+      console.error(
+        "❌ Transmission halt: Could not parse target receiver ID context.",
+      );
       return;
     }
 
@@ -227,7 +269,9 @@ const ProfilePage = () => {
       const newMsg = res.data.data || res.data;
 
       if (socket) {
-        console.log(`🚀 Emitting payload to secure pipeline node: ${targetReceiverId}`);
+        console.log(
+          `🚀 Emitting payload to secure pipeline node: ${targetReceiverId}`,
+        );
         socket.emit("sendMessage", {
           receiverId: String(targetReceiverId),
           data: { ...newMsg, chatId: currentActiveChatId },
@@ -396,9 +440,12 @@ const ProfilePage = () => {
             <div className="h-20 px-6 flex items-center justify-between border-b border-slate-200/60 bg-white">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-slate-500" /> Messages Inbox
+                  <MessageSquare className="w-4 h-4 text-slate-500" /> Messages
+                  Inbox
                 </h2>
-                <p className="text-[11px] text-slate-400 mt-0.5 font-medium tracking-wide">Real-time active handshakes</p>
+                <p className="text-[11px] text-slate-400 mt-0.5 font-medium tracking-wide">
+                  Real-time active handshakes
+                </p>
               </div>
               <span className="text-[10px] font-bold bg-slate-900 text-white px-3 py-1 rounded-lg tracking-wider shadow-sm">
                 {conversations.length} OPEN
@@ -445,7 +492,9 @@ const ProfilePage = () => {
                             </span>
                           )}
                         </div>
-                        <p className={`text-xs truncate mt-1 ${isSeen ? "text-slate-400 font-normal" : "text-slate-700 font-semibold"}`}>
+                        <p
+                          className={`text-xs truncate mt-1 ${isSeen ? "text-slate-400 font-normal" : "text-slate-700 font-semibold"}`}
+                        >
                           {chat.lastMessage || "Click to open active stream..."}
                         </p>
                       </div>
@@ -455,7 +504,9 @@ const ProfilePage = () => {
               ) : (
                 <div className="text-center py-20 border border-dashed border-slate-200 rounded-2xl bg-white p-6">
                   <MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-xs font-medium text-slate-400">No active network handshakes</p>
+                  <p className="text-xs font-medium text-slate-400">
+                    No active network handshakes
+                  </p>
                 </div>
               )}
             </div>
@@ -483,7 +534,8 @@ const ProfilePage = () => {
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                     <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3 text-emerald-500" /> Active Terminal Stream
+                      <ShieldCheck className="w-3 h-3 text-emerald-500" />{" "}
+                      Active Terminal Stream
                     </span>
                   </div>
                 </div>
@@ -506,8 +558,12 @@ const ProfilePage = () => {
                           : "bg-white text-slate-800 border border-slate-200/70 rounded-tl-none"
                       }`}
                     >
-                      <span className="leading-relaxed whitespace-pre-wrap break-words">{msg.text}</span>
-                      <span className={`text-[9px] font-medium tracking-tight self-end opacity-60 ${isMe ? "text-slate-300" : "text-slate-400"}`}>
+                      <span className="leading-relaxed whitespace-pre-wrap break-words">
+                        {msg.text}
+                      </span>
+                      <span
+                        className={`text-[9px] font-medium tracking-tight self-end opacity-60 ${isMe ? "text-slate-300" : "text-slate-400"}`}
+                      >
                         {format(msg.createdAt)}
                       </span>
                     </div>
