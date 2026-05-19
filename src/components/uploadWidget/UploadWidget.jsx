@@ -9,16 +9,23 @@ const UploadWidget = ({ uwConfig, setState }) => {
         cloudName: uwConfig?.cloudName || "hzxyensd5",
         uploadPreset: uwConfig?.uploadPreset || "aoh4fpwm",
         folder: uwConfig?.folder || "posts",
+        multiple: uwConfig?.multiple || false, // Default single image hoga
       },
       (error, result) => {
         if (!error && result.event === "success") {
           if (typeof setState === "function") {
-            // FIX: Single string bhejne ke bajaye purani array mein new URL append kar rahe hain
-            setState((prev) => {
-              // Agar kisi wajah se prev array nahi hai, toh empty array se fallback karein
-              const currentImages = Array.isArray(prev) ? prev : [];
-              return [...currentImages, result.info.secure_url];
-            });
+            
+            if (uwConfig?.multiple) {
+              // 1. Agar MULTIPLE images hain (Jaise NewPostPage par)
+              setState((prev) => {
+                const currentImages = Array.isArray(prev) ? prev : [];
+                return [...currentImages, result.info.secure_url];
+              });
+            } else {
+              // 2. Agar SINGLE image hai (Jaise ProfileUpdate par)
+              setState(result.info.secure_url);
+            }
+
           } else {
             console.error("🎯 Error: Parent component se 'setState' prop sahi se nahi mili!");
           }

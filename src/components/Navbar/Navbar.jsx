@@ -179,21 +179,21 @@ const Navbar = () => {
           Home
         </Link>
         <Link
-          to="/about"
+          to="/"
           onClick={() => setOpen(false)}
           className="hover:text-[#fece51] transition py-1 border-b border-slate-800/50"
         >
           About
         </Link>
         <Link
-          to="/contact"
+          to="/"
           onClick={() => setOpen(false)}
           className="hover:text-[#fece51] transition py-1 border-b border-slate-800/50"
         >
           Contact
         </Link>
         <Link
-          to="/agents"
+          to="/"
           onClick={() => setOpen(false)}
           className="hover:text-[#fece51] transition py-1 border-b border-slate-800/50"
         >

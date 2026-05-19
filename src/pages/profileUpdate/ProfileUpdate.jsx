@@ -29,10 +29,8 @@ const ProfileUpdate = () => {
     },
   });
 
-  // Live preview ke liye watch bilkul sahi hai
   const avatar = watch("avatar");
 
-  // CRITICAL FIX: Sirf tab reset karein jab form 'dirty' (bina chere) na ho, taake image change ke baad purana data overwrite na kare
   useEffect(() => {
     if (user) {
       reset({
@@ -42,12 +40,11 @@ const ProfileUpdate = () => {
         avatar: user.avatar || "",
       });
     }
-  }, [user]); // Baar-baar reset function dependency me lagane se loop hota hai, isko hata diya.
+  }, [user]);
 
   // Clean and direct state updater from Cloudinary
   const handleAvatarSuccess = (url) => {
-    if (url) {
-      // shouldDirty toggles state clearly for react-hook-form
+    if (typeof url === "string") {
       setValue("avatar", url, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
       toast.info("📸 New image selected! Save changes to update.", { autoClose: 2000 });
     }
@@ -70,13 +67,10 @@ const ProfileUpdate = () => {
       );
 
       if (res.data.success || res.status === 200) {
-        // Response se aaya hua updated user object pakrein
         const updatedUserData = res.data.user || res.data.data || payload;
         
-        // 1. Context Global state update karein
         updateUser(updatedUserData);
 
-        // 2. LocalStorage ko force-sync karein taake refresh par purana data na khule
         const currentLocal = JSON.parse(localStorage.getItem("user") || "{}");
         localStorage.setItem("user", JSON.stringify({ ...currentLocal, ...updatedUserData }));
         
@@ -85,7 +79,6 @@ const ProfileUpdate = () => {
           autoClose: 2000,
         });
 
-        // Choti si delay taake context set ho sake dynamic transitions me
         setTimeout(() => {
           navigate("/profile");
         }, 500);
@@ -109,7 +102,11 @@ const ProfileUpdate = () => {
             className="w-full h-full object-cover"
           />
         </div>
-        <UploadWidget setState={handleAvatarSuccess} />
+        {/* Pass explicit uwConfig with multiple: false */}
+        <UploadWidget 
+          uwConfig={{ multiple: false, folder: "avatars", cloudName: "lamadev", uploadPreset: "estate" }} 
+          setState={handleAvatarSuccess} 
+        />
       </div>
 
       {/* LEFT SIDE FORM WRAPPER */}
@@ -121,7 +118,6 @@ const ProfileUpdate = () => {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-            
             {/* USERNAME FIELD */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-slate-500 px-0.5">Username</label>
@@ -203,7 +199,11 @@ const ProfileUpdate = () => {
           />
         </div>
 
-        <UploadWidget setState={handleAvatarSuccess} />
+        {/* Pass explicit uwConfig with multiple: false */}
+        <UploadWidget 
+          uwConfig={{ multiple: false, folder: "avatars", cloudName: "lamadev", uploadPreset: "estate" }} 
+          setState={handleAvatarSuccess} 
+        />
         
         <img
           src="/bg.png"
