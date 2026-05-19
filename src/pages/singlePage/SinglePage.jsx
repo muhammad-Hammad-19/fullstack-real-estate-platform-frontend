@@ -141,6 +141,7 @@ function SinglePage() {
 
   // 🛠️ CRITICAL VALVE: Check coordinates strictly before rendering Map Container
   const hasValidCoordinates = useMemo(() => {
+    
     if (!post) return false;
     const lat = parseFloat(post.latitude);
     const lng = parseFloat(post.longitude);
@@ -149,6 +150,7 @@ function SinglePage() {
       !isNaN(lat) && lat >= -90 && lat <= 90 &&
       !isNaN(lng) && lng >= -180 && lng <= 180
     );
+
   }, [post]);
 
   if (loading) {

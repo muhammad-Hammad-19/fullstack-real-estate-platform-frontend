@@ -24,7 +24,9 @@ const ProfilePage = () => {
   const { user: currentUser, updateUser } = useUser();
   const userId = currentUser?.id || currentUser?.userId || currentUser?._id;
 
-  const decreaseNotification = useNotificationStore((state) => state.decreaseBy);
+  const decreaseNotification = useNotificationStore(
+    (state) => state.decreaseBy,
+  );
 
   const increaseNotification = useNotificationStore((state) => state.increase);
 
@@ -183,7 +185,7 @@ const ProfilePage = () => {
   }, [currentUser, userId]);
 
   // 🛠️ FIXED CHAT SELECTION (Preserving Receiver Identity cleanly)
-// 🛠️ REVOLUTIONARY CHAT SELECTION ENGINE (DIRECT BACKEND SYNC)
+  // 🛠️ REVOLUTIONARY CHAT SELECTION ENGINE (DIRECT BACKEND SYNC)
   const handleOpenChat = async (chat) => {
     try {
       const chatId = chat.id || chat._id;
@@ -221,13 +223,15 @@ const ProfilePage = () => {
       // Agar yeh chat unread thi, to backend par isko READ mark karo
       // aur direct database se real-time fresh count pull karlo!
       if (isUnread) {
-        console.log("🔄 Marking chat as read on backend and re-fetching total count...");
-        
+        console.log(
+          "🔄 Marking chat as read on backend and re-fetching total count...",
+        );
+
         // Backend par seenBy array mein aapki ID push hogi
         await axios.put(
           `http://localhost:3000/api/chats/read/${chatId}`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
         // 🔥 Ginti minus karne ka jhanjhat khatam! Direct backend se naya exact count lao:
@@ -375,13 +379,13 @@ const ProfilePage = () => {
                 <FileText className="w-4 h-4 text-slate-400" /> My Listings
               </h1>
               <button
-                onClick={() => navigate("/add")}
+                onClick={() => navigate("/post/create")}
                 className="bg-slate-900 text-white px-4 py-2 rounded-xl font-semibold text-xs hover:bg-slate-800 transition-all shadow-sm flex items-center gap-1"
               >
                 <Plus className="w-4 h-4" /> New Post
               </button>
             </div>
-
+            
             {userPostsError && (
               <p className="text-red-600 text-xs">{userPostsError}</p>
             )}

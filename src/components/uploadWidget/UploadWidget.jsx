@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const UploadWidget = ({ uwConfig, setState }) => {
+  const widgetRef = useRef(null);
+
   useEffect(() => {
-    const widget = window.cloudinary.createUploadWidget(
+    widgetRef.current = window.cloudinary.createUploadWidget(
       {
         cloudName: uwConfig?.cloudName || "hzxyensd5",
         uploadPreset: uwConfig?.uploadPreset || "aoh4fpwm",
@@ -10,29 +12,21 @@ const UploadWidget = ({ uwConfig, setState }) => {
       },
       (error, result) => {
         if (!error && result.event === "success") {
-          // Parent (NewPostPage) ke images array me naye image URL ko add karna
-          setState((prev) => [...prev, result.info.secure_url]);
+          if (typeof setState === "function") {
+            // Direct secure_url bhej rahe hain bina extra array updates ke
+            setState(result.info.secure_url);
+          } else {
+            console.error("🎯 Error: Parent component se 'setState' prop sahi se nahi mili!");
+          }
         }
       }
     );
-    
-    const handleUploadClick = () => widget.open();
-
-    document
-      .getElementById("upload_widget")
-      .addEventListener("click", handleUploadClick);
-
-    // Cleanup structure to prevent memory leaks
-    return () => {
-      const btn = document.getElementById("upload_widget");
-      if (btn) btn.removeEventListener("click", handleUploadClick);
-    };
   }, [uwConfig, setState]);
 
   return (
     <button
       type="button"
-      id="upload_widget"
+      onClick={() => widgetRef.current?.open()}
       className="bg-[#51c7fe] text-white px-6 py-3 rounded-md font-semibold cursor-pointer shadow-sm hover:bg-[#40b6ed] transition-all"
     >
       Upload Photo

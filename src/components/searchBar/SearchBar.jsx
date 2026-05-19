@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { cityUppercase } from "../../utilis";
 
 function SearchBar() {
-  // Har cheez ke liye alag aur simple state
   const [type, setType] = useState("");
   const [city, setCity] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -15,22 +14,22 @@ function SearchBar() {
       <div className="flex gap-1">
         <button
           type="button"
-          onClick={() => setType("buy")} // Seedhe type ko "buy" kar do
-          className={`px-6 py-3 font-medium rounded-t-md ${
+          onClick={() => setType("buy")}
+          className={`px-5 py-2.5 sm:px-6 sm:py-3 font-medium text-sm sm:text-base rounded-t-md transition-colors ${
             type === "buy"
               ? "bg-black text-white"
-              : "bg-slate-100 text-slate-600"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
           }`}
         >
           Buy
         </button>
         <button
           type="button"
-          onClick={() => setType("rent")} // Seedhe type ko "rent" kar do
-          className={`px-6 py-3 font-medium rounded-t-md ${
+          onClick={() => setType("rent")}
+          className={`px-5 py-2.5 sm:px-6 sm:py-3 font-medium text-sm sm:text-base rounded-t-md transition-colors ${
             type === "rent"
               ? "bg-black text-white"
-              : "bg-slate-100 text-slate-600"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
           }`}
         >
           Rent
@@ -38,7 +37,8 @@ function SearchBar() {
       </div>
       
       {/* 2. SEARCH FORM */}
-      <form className="flex flex-col sm:flex-row border border-slate-200 rounded-b-md sm:rounded-tr-md overflow-hidden bg-white shadow-sm">
+      <form className="flex flex-col sm:flex-row border border-slate-200 rounded-b-md rounded-tr-md sm:rounded-tr-md overflow-hidden bg-white shadow-sm">
+        
         {/* City Input */}
         <input
           type="text"
@@ -46,9 +46,9 @@ function SearchBar() {
           value={city}
           onChange={(e) => {
             let cityName = cityUppercase(e.target.value);
-            setCity(cityName); // State update karne ke liye
-          }} // Ek line mein data save
-          className="flex-1 p-4 border-b sm:border-b-0 sm:border-r border-slate-100 text-sm focus:outline-none"
+            setCity(cityName);
+          }}
+          className="w-full sm:flex-1 p-3.5 sm:p-4 border-b sm:border-b-0 sm:border-r border-slate-100 text-sm focus:outline-none placeholder:text-slate-400"
         />
 
         {/* Min Price Input */}
@@ -56,8 +56,8 @@ function SearchBar() {
           type="number"
           placeholder="Min Price"
           value={minPrice}
-          onChange={(e) => setMinPrice(e.target.value)} // Ek line mein data save
-          className="flex-1 p-4 border-b sm:border-b-0 sm:border-r border-slate-100 text-sm focus:outline-none"
+          onChange={(e) => setMinPrice(e.target.value)}
+          className="w-full sm:flex-1 p-3.5 sm:p-4 border-b sm:border-b-0 sm:border-r border-slate-100 text-sm focus:outline-none placeholder:text-slate-400"
         />
 
         {/* Max Price Input */}
@@ -65,16 +65,18 @@ function SearchBar() {
           type="number"
           placeholder="Max Price"
           value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)} // Ek line mein data save
-          className="flex-1 p-4 text-sm focus:outline-none"
+          onChange={(e) => setMaxPrice(e.target.value)}
+          className="w-full sm:flex-1 p-3.5 sm:p-4 border-b sm:border-b-0 text-sm focus:outline-none placeholder:text-slate-400"
         />
 
+        {/* Search Action Button */}
         <Link
           to={`/list?type=${type}&city=${city}&minPrice=${minPrice}&maxPrice=${maxPrice}`}
-          className="bg-[#fece51] hover:bg-yellow-400 flex items-center justify-center p-4 sm:px-6"
+          className="bg-[#fece51] hover:bg-yellow-400 flex items-center justify-center p-4 sm:px-6 transition-colors active:scale-95 sm:active:scale-100 shrink-0"
         >
-          <img src="/search.png" alt="search" className="w-5 h-5" />
+          <img src="/search.png" alt="search" className="w-5 h-5 object-contain" />
         </Link>
+
       </form>
     </div>
   );

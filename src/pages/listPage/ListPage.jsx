@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import Filter from "../../components/filter/Filter";
@@ -12,7 +12,7 @@ const ListPage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  
   useEffect(() => {
     const fetchFilteredPosts = async () => {
       try {
@@ -41,35 +41,6 @@ const ListPage = () => {
     fetchFilteredPosts();
   }, [searchParams]); // Jab bhi user filter submit karega aur URL badlega, ye function dobara chalega
 
-  // 🛠️ CRITICAL CORRECTION: Map Guard Engine (Failsafe for Leaflet)
-  // Yeh memoized function corrupt coordinates wali posts ko filter karke sirf valid arrays map ko dega
-  const sanitizedMapItems = useMemo(() => {
-    if (!Array.isArray(posts)) return [];
-
-    return posts.filter((post) => {
-      const lat = parseFloat(post.latitude);
-      const lng = parseFloat(post.longitude);
-
-      // Validate coordinates standard range check (Lat: -90 to 90, Lng: -180 to 180)
-      const isValid =
-        !isNaN(lat) &&
-        lat >= -90 &&
-        lat <= 90 &&
-        !isNaN(lng) &&
-        lng >= -180 &&
-        lng <= 180;
-
-      if (!isValid) {
-        console.warn(
-          `⚠️ Leaflet Crash Prevented: Post ID ${post.id || post._id} contains corrupted coordinates:`,
-          { latitude: post.latitude, longitude: post.longitude }
-        );
-      }
-
-      return isValid;
-    });
-  }, [posts]);
-
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-100px)] overflow-hidden bg-white w-full">
       {/* LEFT SIDE: CARDS LIST */}
@@ -87,7 +58,7 @@ const ListPage = () => {
                 {error}
               </p>
             ) : posts && posts.length > 0 ? (
-              posts.map((post) => <Card key={post.id || post._id} item={post} />)
+              posts.map((post) => <Card key={post.id} item={post} />)
             ) : (
               <p className="text-gray-400 italic text-center py-10 bg-slate-50 rounded-lg border-2 border-dashed">
                 No properties match your filter criteria.
@@ -99,8 +70,21 @@ const ListPage = () => {
 
       {/* RIGHT SIDE: MAP SYSTEM */}
       <div className="hidden md:block flex-[2] h-full bg-[#fcf5f3] relative">
-        {/* 🛠️ Safe sanitized dataset reference passing directly here */}
-        {!loading && <Map items={sanitizedMapItems} />}
+        {/* Loading state handle ho taaki empty posts par map component crash na kare */}
+        {!loading && (
+          <Map 
+            items={
+              Array.isArray(posts) 
+                ? posts.filter(post => {
+                    const lat = parseFloat(post.latitude);
+                    const lng = parseFloat(post.longitude);
+                    // Sirf wahi posts map ko do jinki lat/lng numbers hon aur valid range me hon
+                    return !isNaN(lat) && !isNaN(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+                  })
+                : []
+            } 
+          />
+        )}
       </div>
     </div>
   );
