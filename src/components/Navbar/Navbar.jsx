@@ -65,19 +65,19 @@ const Navbar = () => {
                 Home
               </Link>
               <Link
-                to="/about"
+                to="/"
                 className="hover:text-[#fece51] transition-colors duration-200"
               >
                 About
               </Link>
               <Link
-                to="/contact"
+                to="/"
                 className="hover:text-[#fece51] transition-colors duration-200"
               >
                 Contact
               </Link>
               <Link
-                to="/agents"
+                to="/"
                 className="hover:text-[#fece51] transition-colors duration-200"
               >
                 Agents
