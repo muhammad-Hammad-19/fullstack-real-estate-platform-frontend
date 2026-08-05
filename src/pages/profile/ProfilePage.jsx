@@ -626,7 +626,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useNotificationStore } from "../../lib/notificationStore";
-import Card from "../../components/card/Card";
+import Card from "../../components/Card/card";
 import {
   MessageSquare,
   ArrowLeft,

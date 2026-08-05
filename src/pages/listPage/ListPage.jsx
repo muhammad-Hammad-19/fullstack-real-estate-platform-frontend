@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import Filter from "../../components/filter/Filter";
-import Card from "../../components/card/Card";
+import Card from "../../components/Card/card";
 import Map from "../../components/map/Map";
 import { API_URL } from "../../lib/config";
 
