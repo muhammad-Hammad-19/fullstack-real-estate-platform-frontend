@@ -642,6 +642,7 @@ import {
 import { socket } from "../../socket";
 import { format } from "timeago.js";
 import { useUser } from "../../context/AuthContext";
+import { API_ORIGIN } from "../../lib/config";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -650,7 +651,7 @@ const ProfilePage = () => {
   const userId = currentUser?.id || currentUser?.userId || currentUser?._id;
 
   // 🎯 Backend Base URL fallback utility for images
-  const BASE_URL = "http://localhost:3000";
+  const BASE_URL = API_ORIGIN;
 
   // Helper function to check if avatar path is valid
   const hasAvatar = (avatarPath) => {

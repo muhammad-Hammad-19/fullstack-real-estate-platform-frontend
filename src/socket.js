@@ -1,24 +1,22 @@
 import { io } from "socket.io-client";
+import { SOCKET_URL } from "./lib/config";
 
-// URL aapke backend server ka hai
-const URL = "http://localhost:3000";
+export const socket = SOCKET_URL
+  ? io(SOCKET_URL, {
+      withCredentials: true,
+      autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+    })
+  : null;
 
-export const socket = io(URL, {
-  withCredentials: true,
-  autoConnect: true, // 💥 Automatically connect karega jaise hi app load hogi
-  reconnection: true, // 💥 Agar disconnect ho toh khud ba khud reconnect karega
-  reconnectionAttempts: 10, // 💥 10 dafa try karega connect karne ki back-to-back
-  reconnectionDelay: 1000, // 💥 Har 1 second baad try karega taake server par load na aaye
-});
+if (socket) {
+  socket.on("connect", () => {
+    console.log("Frontend connected to Socket Server! ID:", socket.id);
+  });
 
-// Debugging ke liye (Aapke browser ke console mein dikhega ke socket chal raha hai ya nahi)
-socket.on("connect", () => {
-  console.log(
-    "⚡ Frontend successfully connected to Socket Server! ID:",
-    socket.id,
-  );
-});
-
-socket.on("disconnect", (reason) => {
-  console.log("❌ Socket disconnected from server. Reason:", reason);
-});
+  socket.on("disconnect", (reason) => {
+    console.log("Socket disconnected from server. Reason:", reason);
+  });
+}

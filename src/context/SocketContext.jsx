@@ -1,6 +1,7 @@
 // UserContext.jsx (Ya AuthContext.jsx jo aap use kar rahe hain)
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import { SOCKET_URL } from "../lib/config";
 
 const AuthSocketContext = createContext(null);
 
@@ -29,8 +30,13 @@ export const SocketProvider = ({ children }) => {
 
     const currentUserId = user.id || user.userId || user._id;
 
+    if (!SOCKET_URL) {
+      setSocket(null);
+      return;
+    }
+
     // Single pipeline connection initialize
-    const socketInstance = io("http://localhost:3000", {
+    const socketInstance = io(SOCKET_URL, {
       withCredentials: true,
     });
 

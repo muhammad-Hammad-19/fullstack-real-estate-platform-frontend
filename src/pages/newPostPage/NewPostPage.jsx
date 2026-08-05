@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import UploadWidget from "../../components/uploadWidget/UploadWidget";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../lib/config";
 
 function NewPostPage() {
   const [images, setImages] = useState([]);
@@ -88,7 +89,7 @@ function NewPostPage() {
     };
     
     try {
-      const res = await axios.post("http://localhost:3000/api/posts", payload, {
+      const res = await axios.post(`${API_URL}/posts`, payload, {
         withCredentials: true,
       });
 

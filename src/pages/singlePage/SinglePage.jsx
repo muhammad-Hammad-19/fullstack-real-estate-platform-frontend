@@ -387,6 +387,7 @@ import axios from "axios";
 import Map from "../../components/map/Map";
 import Slider from "../../components/slider/Slider";
 import { useUser } from "../../context/AuthContext";
+import { API_URL } from "../../lib/config";
 
 function SinglePage() {
   const { id } = useParams();
@@ -408,7 +409,7 @@ function SinglePage() {
         setError("");
 
         const res = await axios.get(
-          `http://localhost:3000/api/posts/${id}/details`,
+          `${API_URL}/posts/${id}/details`,
           { withCredentials: true },
         );
 
@@ -427,7 +428,7 @@ function SinglePage() {
         if (user) {
           try {
             const savedCheck = await axios.get(
-              "http://localhost:3000/api/users/savedPosts",
+              `${API_URL}/users/savedPosts`,
               { withCredentials: true },
             );
             const savedList = savedCheck.data.data || savedCheck.data || [];
@@ -468,7 +469,7 @@ function SinglePage() {
     try {
       setSaveLoading(true);
       const response = await axios.post(
-        "http://localhost:3000/api/users/save",
+        `${API_URL}/users/save`,
         { postId: id },
         { withCredentials: true },
       );
@@ -507,7 +508,7 @@ function SinglePage() {
     try {
       setChatLoading(true);
       const res = await axios.post(
-        "http://localhost:3000/api/chats",
+        `${API_URL}/chats`,
         { receiverId: ownerId },
         { withCredentials: true },
       );

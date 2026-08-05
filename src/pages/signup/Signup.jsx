@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { API_URL } from "../../lib/config";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const Signup = () => {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/register",
+        `${API_URL}/auth/register`,
         {
           username: data.username,
           email: data.email,

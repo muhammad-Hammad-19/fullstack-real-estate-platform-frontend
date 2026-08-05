@@ -5,6 +5,7 @@ import { useUser } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { API_URL } from "../../lib/config";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        `${API_URL}/auth/login`,
         {
           username: data.username,
           password: data.password,

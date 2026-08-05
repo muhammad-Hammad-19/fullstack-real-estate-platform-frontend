@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import { API_URL } from "./config";
 
 export const useNotificationStore = create((set) => ({
   number: 0,
@@ -7,7 +8,7 @@ export const useNotificationStore = create((set) => ({
   fetchChats: async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3000/api/users/notification",
+        `${API_URL}/users/notification`,
         { withCredentials: true }
       );
       const count = typeof res.data === "object" ? res.data.count || 0 : res.data;

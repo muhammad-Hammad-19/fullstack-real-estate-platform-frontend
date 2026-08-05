@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useUser } from "../../context/AuthContext";
 import { useNotificationStore } from "../../lib/notificationStore";
+import { API_ORIGIN } from "../../lib/config";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -25,7 +26,7 @@ const Navbar = () => {
 
   // Helper function to resolve dynamic image path safely
   const resolveAvatar = (avatarPath) => {
-    const BASE_URL = "http://localhost:3000"; // Dynamic backend node config
+    const BASE_URL = API_ORIGIN;
     if (!avatarPath) return null;
     if (avatarPath.startsWith("http://") || avatarPath.startsWith("https://")) {
       return avatarPath;
@@ -120,7 +121,7 @@ const Navbar = () => {
             ) : (
               <div className="hidden md:flex items-center gap-5 font-bold text-sm">
                 <Link
-                  to="/login"
+                  to="/auth/login"
                   className="text-slate-600 hover:text-slate-900 transition"
                 >
                   Sign In

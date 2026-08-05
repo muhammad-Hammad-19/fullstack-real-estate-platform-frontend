@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { useUser } from "../../context/AuthContext";
 import UploadWidget from "../../components/uploadWidget/UploadWidget";
 import "react-toastify/dist/ReactToastify.css";
+import { API_URL } from "../../lib/config";
 
 const ProfileUpdate = () => {
   const { user, updateUser } = useUser();
@@ -61,7 +62,7 @@ const ProfileUpdate = () => {
       };
 
       const res = await axios.put(
-        `http://localhost:3000/api/users/${userId}`,
+        `${API_URL}/users/${userId}`,
         payload,
         { withCredentials: true }
       );

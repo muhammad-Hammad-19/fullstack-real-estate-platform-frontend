@@ -4,6 +4,7 @@ import axios from "axios";
 import Filter from "../../components/filter/Filter";
 import Card from "../../components/card/Card";
 import Map from "../../components/map/Map";
+import { API_URL } from "../../lib/config";
 
 const ListPage = () => {
   const [searchParams] = useSearchParams();
@@ -20,7 +21,7 @@ const ListPage = () => {
         setError("");
 
         const res = await axios.get(
-          `http://localhost:3000/api/posts?${searchParams.toString()}`,
+          `${API_URL}/posts?${searchParams.toString()}`,
           {
             withCredentials: true,
           },
