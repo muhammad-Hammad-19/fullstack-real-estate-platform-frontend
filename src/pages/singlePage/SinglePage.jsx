@@ -385,7 +385,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import axios from "axios";
 import Map from "../../components/map/Map";
-import Slider from "../../components/slider/Slider";
+import Slider from "../../components/slider/slider";
 import { useUser } from "../../context/AuthContext";
 import { API_URL } from "../../lib/config";
 
