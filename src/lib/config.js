@@ -1,7 +1,7 @@
 const configuredApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_PUBLIC_API_URL;
 
 // Keep local development working while allowing a separate Vercel backend.
-export const API_URL = (configuredApiUrl || (import.meta.env.DEV ? "http://localhost:3000/api" : "/api")).replace(/\/$/, "");
+export const API_URL = (configuredApiUrl || (import.meta.env.DEV ? "https://fullstack-real-estate-platform-wjnr.vercel.app/api" : "/api")).replace(/\/$/, "");
 
 export const API_ORIGIN = API_URL.startsWith("http")
   ? API_URL.replace(/\/api\/?$/, "")
