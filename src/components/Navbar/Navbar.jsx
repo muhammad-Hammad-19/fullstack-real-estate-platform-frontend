@@ -6,18 +6,14 @@ import { API_ORIGIN } from "../../lib/config";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const { user, socket } = useUser();
+  const { user } = useUser();
 
   const fetchChats = useNotificationStore((state) => state.fetchChats);
   const number = useNotificationStore((state) => state.number);
-  const initSocketListener = useNotificationStore(
-    (state) => state.initSocketListener,
-  );
 
   useEffect(() => {
     if (user) fetchChats();
-    if (user && socket) initSocketListener(socket);
-  }, [user, socket, fetchChats, initSocketListener]);
+  }, [user, fetchChats]);
 
   // Helper function to check if avatar path is valid
   const hasAvatar = (avatarPath) => {
